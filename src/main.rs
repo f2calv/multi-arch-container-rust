@@ -3,6 +3,7 @@ use env_logger::Env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
+use sys_info::*;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -22,7 +23,7 @@ async fn main() -> std::io::Result<()> {
     //Load app settings from env variables
     let app_settings = get_configuration().expect("configuration issue");
 
-    log::info!("Hit Ctrl-C to exit...");
+    log::info!("Hit Ctrl-C to exit....");
     while running.load(Ordering::SeqCst) {
         // let appName = "AppDomain.CurrentDomain.FriendlyName"; //TODO
         // let ProcessArchitecture = "RuntimeInformation.ProcessArchitecture"; //TODO
@@ -54,6 +55,8 @@ async fn main() -> std::io::Result<()> {
         tokio::time::sleep(Duration::from_millis(2_000)).await;
     }
 
+    print_sysinfo();
+
     Ok(())
 }
 
@@ -77,4 +80,43 @@ struct AppSettings {
     github_workflow: String,
     github_run_id: u32,
     github_run_number: u32,
+}
+
+fn print_sysinfo() {
+    log::debug!("os: {} {}", os_type().unwrap(), os_release().unwrap());
+    log::debug!(
+        "cpu: {} cores, {} MHz",
+        cpu_num().unwrap(),
+        cpu_speed().unwrap()
+    );
+    log::debug!("proc total: {}", proc_total().unwrap());
+    let load = loadavg().unwrap();
+    log::debug!("load: {} {} {}", load.one, load.five, load.fifteen);
+    let mem = mem_info().unwrap();
+    log::debug!(
+        "mem: total {} KB, free {} KB, avail {} KB, buffers {} KB, cached {} KB",
+        mem.total,
+        mem.free,
+        mem.avail,
+        mem.buffers,
+        mem.cached
+    );
+    log::debug!(
+        "swap: total {} KB, free {} KB",
+        mem.swap_total,
+        mem.swap_free
+    );
+    #[cfg(not(target_os = "solaris"))]
+    {
+        let disk = disk_info().unwrap();
+        log::debug!("disk: total {} KB, free {} KB", disk.total, disk.free);
+    }
+    log::debug!("hostname: {}", hostname().unwrap());
+    #[cfg(not(target_os = "windows"))]
+    {
+        let t = boottime().unwrap();
+        log::debug!("boottime {} sec, {} usec", t.tv_sec, t.tv_usec);
+    }
+    #[cfg(target_os = "linux")]
+    log::debug!("/etc/os-release: {:?}", linux_os_release().unwrap());
 }
