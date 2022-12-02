@@ -21,9 +21,8 @@ FROM source AS build
 RUN cargo build --release
 
 
-#FROM gcr.io/distroless/cc AS final
-FROM rust AS final
-COPY --from=build /app/target/release/app app
+FROM gcr.io/distroless/cc AS final
+COPY --from=build /app/target/release/multi-arch-container-rust .
 
 ARG GIT_REPO
 ENV APP_GIT_REPO=$GIT_REPO
@@ -41,4 +40,4 @@ ENV APP_GITHUB_RUN_ID=$GITHUB_RUN_ID
 ARG GITHUB_RUN_NUMBER
 ENV APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER
 
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["./multi-arch-container-rust"]

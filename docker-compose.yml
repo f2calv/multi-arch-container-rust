@@ -14,4 +14,4 @@ services:
         GITHUB_RUN_ID: ${GITHUB_RUN_ID}
         GITHUB_RUN_NUMBER: ${GITHUB_RUN_NUMBER}
     environment:
-      RUST_LOG: ${RUST_LOG?:debug}
+      RUST_LOG: ${RUST_LOG?:info}

@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "multi-arch-container-rust"
 authors = ["Alex Vincent <alex@far2cool.com>"]
 version = "0.1.0"
 edition = "2021"
