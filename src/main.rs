@@ -7,21 +7,19 @@ use std::time::Duration;
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     // Set INFO logging level as default
-    //env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     env_logger::Builder::from_env(Env::default().default_filter_or("debug")).init();
-    //env_logger::init();
 
     log::debug!("application started...");
 
     // Set a watch on Ctrl-C, http://detegr.github.io/doc/ctrlc/
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
-
     ctrlc::set_handler(move || {
         r.store(false, Ordering::SeqCst);
     })
     .expect("Error setting Ctrl-C handler");
 
+    //Load app settings from env variables
     let app_settings = get_configuration().expect("configuration issue");
 
     log::info!("Hit Ctrl-C to exit...");
