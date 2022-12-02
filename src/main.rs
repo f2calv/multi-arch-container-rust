@@ -39,17 +39,17 @@ async fn main() -> std::io::Result<()> {
 
         log::info!(
             "Repository information; name '{}', branch '{}', commit '{}', tag '{}'",
-            app_settings.GIT_REPO,
-            app_settings.GIT_BRANCH,
-            app_settings.GIT_COMMIT,
-            app_settings.GIT_TAG,
+            app_settings.git_repo,
+            app_settings.git_branch,
+            app_settings.git_commit,
+            app_settings.git_tag,
         );
 
         log::info!(
             "CI/CD information; GitHub Workflow '{}', run id '{}', run number '{}'",
-            app_settings.GITHUB_WORKFLOW,
-            app_settings.GITHUB_RUN_ID,
-            app_settings.GITHUB_RUN_NUMBER,
+            app_settings.github_workflow,
+            app_settings.github_run_id,
+            app_settings.github_run_number,
         );
 
         tokio::time::sleep(Duration::from_millis(2_000)).await;
@@ -72,11 +72,11 @@ fn get_configuration() -> Result<AppSettings, ConfigError> {
 
 #[derive(Debug, serde::Deserialize)]
 struct AppSettings {
-    GIT_REPO: String,
-    GIT_BRANCH: String,
-    GIT_COMMIT: String,
-    GIT_TAG: String,
-    GITHUB_WORKFLOW: String,
-    GITHUB_RUN_ID: String,
-    GITHUB_RUN_NUMBER: String,
+    git_repo: String,
+    git_branch: String,
+    git_commit: String,
+    git_tag: String,
+    github_workflow: String,
+    github_run_id: String,
+    github_run_number: String,
 }
