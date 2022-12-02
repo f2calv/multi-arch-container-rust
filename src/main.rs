@@ -76,6 +76,6 @@ struct AppSettings {
     git_commit: String,
     git_tag: String,
     github_workflow: String,
-    github_run_id: String,
-    github_run_number: String,
+    github_run_id: u32,
+    github_run_number: u32,
 }
