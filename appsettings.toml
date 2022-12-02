@@ -1,7 +1,0 @@
-GIT_REPO = "n/a"
-GIT_BRANCH = "n/a"
-GIT_COMMIT = "n/a"
-GIT_TAG = "n/a"
-GITHUB_WORKFLOW = "n/a"
-GITHUB_RUN_ID = 0
-GITHUB_RUN_NUMBER = 0

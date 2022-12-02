@@ -16,15 +16,16 @@ RUN cargo build --release
 
 FROM dependencies AS source
 COPY ./src/ /app/src/
-COPY ./appsettings*.toml /app/
 
 
 FROM source AS build
 RUN cargo build --release
 
 
-FROM gcr.io/distroless/cc AS final
+#FROM gcr.io/distroless/cc AS final
+FROM rust AS final
 #RUN apt-get update && apt-get install -yq lld
-COPY --from=build /app/appsettings*.toml /
+RUn pwd
+RUN ls -lsa
 COPY --from=build /app/target/release/app app
 ENTRYPOINT ["./app"]

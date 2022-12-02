@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+
+  app:
+    build:
+      context: .
+    environment:
+      - RUST_LOG=debug
+      - APP_GIT_REPO=${APP_GIT_REPO?err}
+      - APP_GIT_BRANCH=${APP_GIT_BRANCH?err}
+      - APP_GIT_COMMIT=${APP_GIT_COMMIT?err}
+      - APP_GIT_TAG=${APP_GIT_TAG?err}
+      - APP_GITHUB_WORKFLOW=${APP_GITHUB_WORKFLOW?err}
+      - APP_GITHUB_RUN_ID=${APP_GITHUB_RUN_ID?err}
+      - APP_GITHUB_RUN_NUMBER=${APP_GITHUB_RUN_NUMBER?err}

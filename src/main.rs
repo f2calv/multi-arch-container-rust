@@ -1,5 +1,5 @@
-#![allow(dead_code, non_snake_case)]
-use config::{Config, ConfigError, File};
+#![allow(non_snake_case)]
+use config::{Config, ConfigError};
 use env_logger::Env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -60,7 +60,6 @@ async fn main() -> std::io::Result<()> {
 
 fn get_configuration() -> Result<AppSettings, ConfigError> {
     let config = Config::builder()
-        .add_source(File::with_name("appsettings.toml"))
         .add_source(
             config::Environment::with_prefix("APP")
                 .prefix_separator("_")
@@ -77,6 +76,6 @@ struct AppSettings {
     git_commit: String,
     git_tag: String,
     github_workflow: String,
-    github_run_id: u32,
-    github_run_number: u32,
+    github_run_id: String,
+    github_run_number: String,
 }
