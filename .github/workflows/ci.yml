@@ -1,0 +1,105 @@
+name: ci
+
+on:
+  workflow_dispatch:
+    inputs:
+    #Note: not yet plugged in...
+      BuildConfiguration:
+        type: choice
+        description: Build Configuration
+        required: true
+        default: release
+        options:
+          - release
+          - debug
+  push:
+    branches-ignore:
+      - "preview/**"
+    paths-ignore:
+      - LICENSE
+      - README.md
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+env:
+  IMAGE_NAME: rust-playground
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      REGISTRY: ghcr.io
+      #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
+      GIT_REPO: ${{ github.repository }}
+      GIT_TAG: 0.0.1
+      GIT_BRANCH: ${{ github.ref }}
+      GIT_COMMIT: ${{ github.sha }}
+    steps:
+
+      - uses: actions/checkout@v2
+        # with:
+        #   fetch-depth: 0
+
+      - name: set vars (1 of 2)
+        run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
+
+      - name: set vars (2 of 2)
+        if: github.ref != 'refs/heads/main' #non-default branch has a more verbose SemVer which we overwrite
+        run: echo "GIT_TAG=dev" >> $GITHUB_ENV
+
+      - name: image:base
+        run: docker build -t image:base . --target base
+
+      - name: image:dependencies
+        run: docker build -t image:dependencies . --target dependencies
+
+      - name: image:source
+        run: docker build -t image:source . --target source
+
+      - name: image:build
+        run: docker build -t image:build . --target build
+
+      - name: image:final
+        run: docker build -t image:final . --target final
+
+      - name: cargo version
+        run: cargo version
+
+      - name: cargo fmt
+        run: docker run --rm --name fmt image:source cargo fmt --all --check
+        if: always()
+
+      - name: cargo clippy
+        run: docker run --rm --name clippy image:source cargo clippy -- -D warnings
+        if: always()
+
+      - name: cargo test
+        run: docker run --rm --name clippy image:build cargo test
+        if: always()
+
+      - name: docker build
+        run: |
+          docker build \
+            -t $REGISTRY/$REPOSITORY:$GIT_TAG \
+            --label "GITHUB_RUN_ID=${{ github.run_id }}" \
+            --label "IMAGE_NAME=$IMAGE_NAME" \
+            --build-arg GIT_REPO=$GIT_REPO \
+            --build-arg GIT_TAG=$GIT_TAG \
+            --build-arg GIT_BRANCH=$GIT_BRANCH \
+            --build-arg GIT_COMMIT=$GIT_COMMIT \
+            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
+            --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
+            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
+            --pull \
+            --target final \
+            .
+        if: github.ref == 'refs/heads/main'
+
+      - name: docker push
+        run: docker push $REGISTRY/$REPOSITORY:$GIT_TAG
+        #if: github.ref == 'refs/heads/main'
+        if: false
