@@ -17,7 +17,7 @@ export RUST_LOG=debug
 
 DOCKER_BUILDKIT=0
 
-docker buildx create --name multiarchrust --use
+docker buildx create --name multiarchrust --use --config microk8s.toml
 
 docker buildx build -t $REGISTRY/multi-arch-container-rust:$GIT_TAG \
     --build-arg GIT_REPO=$GIT_REPO \
