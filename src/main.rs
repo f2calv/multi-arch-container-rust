@@ -8,10 +8,10 @@ use std::time::Duration;
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     // Set INFO logging level as default
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    //env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("debug")).init();
+    //env_logger::init();
 
-    log::info!("asdasdas...");
-    log::debug!("this is debug...");
     // Set a watch on Ctrl-C, http://detegr.github.io/doc/ctrlc/
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
@@ -21,10 +21,9 @@ async fn main() -> std::io::Result<()> {
     })
     .expect("Error setting Ctrl-C handler");
 
-    log::info!("Hit Ctrl-C to exit...");
-
     let app_settings = get_configuration().expect("configuration issue");
 
+    log::info!("Hit Ctrl-C to exit...");
     while running.load(Ordering::SeqCst) {
         let appName = "AppDomain.CurrentDomain.FriendlyName"; //TODO
         let ProcessArchitecture = "RuntimeInformation.ProcessArchitecture"; //TODO
