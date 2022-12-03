@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-arch-container-rust
+  labels:
+    app: multi-arch-container-rust
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: multi-arch-container-rust
+  template:
+    metadata:
+      labels:
+        app: multi-arch-container-rust
+    spec:
+      containers:
+      - name: primary
+        image: 192.168.1.245:32000/multi-arch-container-rust:registry
+        imagePullPolicy: Always
+        # ports:
+        # - name: http
+        #   containerPort: 80
+        #   protocol: TCP
+        # - name: metrics
+        #   containerPort: 81
+        #   protocol: TCP
+        # - name: grpc
+        #   containerPort: 5000
+        #   protocol: TCP
+        # livenessProbe:
+        #   httpGet:
+        #     path: /healthz/live
+        #     port: 81
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 6
+        #   timeoutSeconds: 6
+        #   failureThreshold: 5
+        # readinessProbe:
+        #   httpGet:
+        #     path: /healthz/ready
+        #     port: 81
+        #   initialDelaySeconds: 3
+        #   periodSeconds: 6
+        #   timeoutSeconds: 6
+        #   failureThreshold: 5
+        # readinessProbe:
+        #   tcpSocket:
+        #     port: 80
+        #   initialDelaySeconds: 5
+        #   periodSeconds: 5
+        # readinessProbe:
+        #   httpGet:
+        #     path: /healthz
+        #     port: 81
+        #   initialDelaySeconds: 3
+        #   periodSeconds: 6
+        #   timeoutSeconds: 6
+        #   failureThreshold: 5
+        env:
+        - name: "APP_ENVIRONMENT"
+          value: "prd"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: multi-arch-container-rust-svc
+# spec:
+#   type: ClusterIP
+#   ports:
+#   - name: http
+#     protocol: TCP
+#     port: 80
+#     targetPort: 80
+#   - name: metrics
+#     protocol: TCP
+#     port: 81
+#     targetPort: 81
+#   - name: grpc
+#     protocol: TCP
+#     port: 5000
+#     targetPort: 5000
+#   selector:
+#     app: multi-arch-container-rust
