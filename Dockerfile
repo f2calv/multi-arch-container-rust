@@ -1,7 +1,8 @@
 FROM --platform=$BUILDPLATFORM rust AS base
+RUN apt update && apt upgrade -y 
 RUN rustup component add clippy
 RUN rustup component add rustfmt
-
+#RUN cargo install cross
 
 FROM base AS dependencies
 WORKDIR /app/
@@ -23,6 +24,8 @@ RUN cargo build --release
 FROM dependencies AS source
 COPY ./src/ /app/src/
 
+#https://www.docker.com/blog/cross-compiling-rust-code-for-multiple-architectures/
+#https://github.com/drone/tutorials/blob/master/content/rust/docker/rust-docker-arm64.md
 
 FROM source AS build
 RUN cargo build --release
