@@ -1,22 +1,27 @@
 FROM --platform=$BUILDPLATFORM rust AS base
+FROM rust AS base
+ARG TARGET
 RUN apt update && apt upgrade -y
 RUN apt install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross
 
-RUN rustup target add aarch64-unknown-linux-gnu
-RUN rustup toolchain install stable-aarch64-unknown-linux-gnu
+
+RUN rustup target add $TARGET
+RUN rustup toolchain install stable-$TARGET
+
+
 
 
 
 FROM base AS dependencies
+ARG TARGET
 WORKDIR /app/
 #initialize empty application
 RUN cargo init
 #replace the toml dependency file with our own
 COPY ./Cargo.toml ./Cargo.lock /app/
 #run a build to download the dependencies
-ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
-RUN cargo build --release --target=aarch64-unknown-linux-gnu
-
+#RUN cargo build --release --target=$TARGET
+RUN cargo fetch --target=$TARGET
 
 
 FROM dependencies AS source
@@ -25,15 +30,20 @@ COPY ./src/ /app/src/
 
 
 FROM source AS build
+ARG TARGET
 COPY ./src/ /app/src/
-ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
-RUN cargo build --target aarch64-unknown-linux-gnu
+#ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+RUN cargo build --release --target $TARGET
 
 
 
 #FROM gcr.io/distroless/cc AS final
-FROM gcr.io/distroless/cc:debug AS final
-COPY --from=build /app/target/aarch64-unknown-linux-gnu/release/multi-arch-container-rust .
+#FROM gcr.io/distroless/cc:debug AS final
+FROM rust:slim AS final
+ARG TARGET
+#WORKDIR /app/target/
+COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
+
 
 
 ARG GIT_REPO
@@ -47,9 +57,9 @@ ENV APP_GIT_COMMIT=$GIT_COMMIT
 
 ARG GITHUB_WORKFLOW
 ENV APP_GITHUB_WORKFLOW=$GITHUB_WORKFLOW
-ARG GITHUB_RUN_ID
+ARG GITHUB_RUN_ID=0
 ENV APP_GITHUB_RUN_ID=$GITHUB_RUN_ID
-ARG GITHUB_RUN_NUMBER
+ARG GITHUB_RUN_NUMBER=0
 ENV APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER
 
 ENTRYPOINT ["./multi-arch-container-rust"]
