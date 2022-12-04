@@ -38,7 +38,7 @@ async fn main() -> std::io::Result<()> {
         // );
 
         log::info!(
-            "Repository information; name '{}', branch '{}', commit '{}', tag '{}'",
+            "Repository information; name '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
             app_settings.git_repo,
             app_settings.git_branch,
             app_settings.git_commit,
@@ -46,7 +46,7 @@ async fn main() -> std::io::Result<()> {
         );
 
         log::info!(
-            "CI/CD information; GitHub Workflow '{}', run id '{}', run number '{}'",
+            "CI/CD information; GitHub Workflow '{:?}', run id '{:?}', run number '{:?}'",
             app_settings.github_workflow,
             app_settings.github_run_id,
             app_settings.github_run_number,
@@ -82,9 +82,13 @@ struct AppSettings {
     github_run_number: Option<u32>,
 }
 
-impl std:fmt::Display for AppSettings {
-    fn fmt(&self, f: &mut std:fmt::Formatter<'_>) -> std:fmt::Result {
-        write!(f, "({}, {})", self.git_repo, self.y)
+impl std::fmt::Display for AppSettings {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "git_repo='{:?}', git_branch='{:?}'",
+            self.git_repo, self.git_branch
+        )
     }
 }
 
@@ -123,6 +127,6 @@ fn print_sysinfo() {
         let t = boottime().unwrap();
         log::debug!("boottime {} sec, {} usec", t.tv_sec, t.tv_usec);
     }
-    #[cfg(target_os = "linux")]
-    log::debug!("/etc/os-release: {:?}", linux_os_release().unwrap());
+    // #[cfg(target_os = "linux")]
+    // log::debug!("/etc/os-release: {:?}", linux_os_release().unwrap());
 }
