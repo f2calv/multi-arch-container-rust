@@ -1,8 +1,8 @@
 #FROM --platform=$BUILDPLATFORM rust AS base
 FROM rust AS base
-ARG TARGET=x86_64-unknown-linux-gnu
+ARG TARGET
 RUN apt update && apt upgrade -y
-RUN apt install -y g++-x86-64-linux-gnu
+#RUN apt install -y g++-x86-64-linux-gnu
 
 
 RUN rustup target add $TARGET
@@ -13,7 +13,7 @@ RUN rustup toolchain install stable-$TARGET
 
 
 FROM base AS dependencies
-ARG TARGET=x86_64-unknown-linux-gnu
+ARG TARGET
 WORKDIR /app/
 #initialize empty application
 RUN cargo init
@@ -31,7 +31,7 @@ COPY ./src/ /app/src/
 
 
 FROM source AS build
-ARG TARGET=x86_64-unknown-linux-gnu
+ARG TARGET
 COPY ./src/ /app/src/
 #ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
 RUN cargo build --release --target $TARGET
@@ -41,7 +41,7 @@ RUN cargo build --release --target $TARGET
 #FROM gcr.io/distroless/cc AS final
 #FROM gcr.io/distroless/cc:debug AS final
 FROM rust:slim AS final
-ARG TARGET=x86_64-unknown-linux-gnu
+ARG TARGET
 #WORKDIR /app/target/
 COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
 
