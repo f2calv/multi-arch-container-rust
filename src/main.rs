@@ -73,13 +73,19 @@ fn get_configuration() -> Result<AppSettings, ConfigError> {
 
 #[derive(Debug, serde::Deserialize)]
 struct AppSettings {
-    git_repo: String,
-    git_branch: String,
-    git_commit: String,
-    git_tag: String,
-    github_workflow: String,
-    github_run_id: u32,
-    github_run_number: u32,
+    git_repo: Option<String>,
+    git_branch: Option<String>,
+    git_commit: Option<String>,
+    git_tag: Option<String>,
+    github_workflow: Option<String>,
+    github_run_id: Option<u32>,
+    github_run_number: Option<u32>,
+}
+
+impl std:fmt::Display for AppSettings {
+    fn fmt(&self, f: &mut std:fmt::Formatter<'_>) -> std:fmt::Result {
+        write!(f, "({}, {})", self.git_repo, self.y)
+    }
 }
 
 fn print_sysinfo() {
