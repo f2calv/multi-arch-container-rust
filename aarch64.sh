@@ -10,6 +10,7 @@ docker buildx build \
     --build-arg TARGET=aarch64-unknown-linux-gnu \
     --platform linux/arm64 \
     --pull \
+    --push \
     .
 
 docker run --rm -it --name temp 192.168.1.245:32000/aarch64:registry
@@ -21,3 +22,6 @@ docker run --rm -it --name temp 192.168.1.245:32000/aarch64:registry
 #kubectl delete -f aarch64.yaml
 #kubectl apply -f aarch64.yaml
 #kubectl get po -w
+
+#Now launch the pod on the cluster...
+kubectl run -i --tty --attach aarch64test --image=192.168.1.245:32000/aarch64:registry

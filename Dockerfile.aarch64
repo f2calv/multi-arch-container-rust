@@ -1,12 +1,10 @@
 FROM --platform=$BUILDPLATFORM rust AS base
-FROM rust AS base
 ARG TARGET
 RUN apt-get update && apt-get upgrade -y
 #RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross lld clang musl aarch64-linux-gnu-gcc
-#RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross
+RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross
 #RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross aarch64-linux-gnu-gcc
-RUN apt-get install -y gcc-aarch64-linux-gnu
-
+#RUN apt-get install -y gcc-aarch64-linux-gnu
 RUN rustup target add $TARGET
 RUN rustup toolchain install stable-$TARGET
 
@@ -14,36 +12,38 @@ RUN rustup toolchain install stable-$TARGET
 
 
 
-FROM base AS dependencies
-ARG TARGET
-WORKDIR /app/
-#initialize empty application
-RUN cargo init
-#replace the toml dependency file with our own
-COPY ./Cargo.toml ./Cargo.lock /app/
-#run a build to download the dependencies
-#RUN cargo build --release --target=$TARGET
-ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
-#RUN cargo fetch --target=$TARGET
-RUN cargo fetch
+# FROM base AS dependencies
+# ARG TARGET
+# WORKDIR /app
+# #initialize empty application
+# RUN cargo init
+# #replace the toml dependency file with our own
+# COPY ./Cargo.toml ./Cargo.lock /app
+# #run a build to download the dependencies
+# #RUN cargo build --release --target=$TARGET
+# ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+# #RUN cargo fetch --target=$TARGET
+# RUN cargo fetch
 
 
-FROM dependencies AS source
-COPY ./src/ /app/src/
+# FROM dependencies AS source
+# COPY ./src/ /app/src/
 
+FROM base AS source
+WORKDIR /app
+COPY . .
 
 
 FROM source AS build
 ARG TARGET
-COPY ./src/ /app/src/
 ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
 RUN cargo build --release --target $TARGET
 
 
 
-#FROM gcr.io/distroless/cc AS final
+FROM gcr.io/distroless/cc AS final
 #FROM gcr.io/distroless/cc:debug AS final
-FROM rust:slim AS final
+#FROM rust:slim AS final
 ARG TARGET
 #WORKDIR /app/target/
 COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
