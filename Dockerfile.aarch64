@@ -2,9 +2,10 @@ FROM --platform=$BUILDPLATFORM rust AS base
 FROM rust AS base
 ARG TARGET
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -yq g++-aarch64-linux-gnu libc6-dev-arm64-cross lld clang musl aarch64-linux-gnu-gcc
-#RUN apt-get install -yq g++-aarch64-linux-gnu libc6-dev-arm64-cross
-
+#RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross lld clang musl aarch64-linux-gnu-gcc
+#RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross
+#RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross aarch64-linux-gnu-gcc
+RUN apt-get install -y gcc-aarch64-linux-gnu
 
 RUN rustup target add $TARGET
 RUN rustup toolchain install stable-$TARGET
