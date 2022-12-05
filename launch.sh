@@ -15,7 +15,7 @@ export RUST_LOG=debug
 
 #RUST_LOG=debug cargo run
 
-DOCKER_BUILDKIT=0
+DOCKER_BUILDKIT=1
 
 docker buildx create --name multiarchrust --use --config microk8s.toml
 

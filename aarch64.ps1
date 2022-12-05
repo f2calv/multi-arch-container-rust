@@ -12,10 +12,12 @@ $GITHUB_RUN_ID = 0
 $GITHUB_RUN_NUMBER = 0
 
 #https://github.com/docker/buildx/issues/94#issuecomment-534831828
-& "docker" buildx create --name multiarchcontainerrust --use --config microk8s.toml
+& "docker" buildx create --name multiarchrust --use --config microk8s.toml
 
 & "docker" buildx build `
-    -t "$REGISTRY/multi-arch-container-rust:$GIT_TAG" `
+    -t "$REGISTRY/aarch64:$GIT_TAG" `
+    -f Dockerfile.aarch64 `
+    --build-arg TARGET=aarch64-unknown-linux-gnu `
     --build-arg GIT_REPO=$GIT_REPO `
     --build-arg GIT_TAG=$GIT_TAG `
     --build-arg GIT_BRANCH=$GIT_BRANCH `
