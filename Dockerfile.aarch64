@@ -1,8 +1,9 @@
 FROM --platform=$BUILDPLATFORM rust AS base
 FROM rust AS base
 ARG TARGET
-RUN apt update && apt upgrade -y
-RUN apt install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross
+RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -yq g++-aarch64-linux-gnu libc6-dev-arm64-cross lld clang musl aarch64-linux-gnu-gcc
+#RUN apt-get install -yq g++-aarch64-linux-gnu libc6-dev-arm64-cross
 
 
 RUN rustup target add $TARGET
@@ -21,7 +22,9 @@ RUN cargo init
 COPY ./Cargo.toml ./Cargo.lock /app/
 #run a build to download the dependencies
 #RUN cargo build --release --target=$TARGET
-RUN cargo fetch --target=$TARGET
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+#RUN cargo fetch --target=$TARGET
+RUN cargo fetch
 
 
 FROM dependencies AS source
@@ -32,7 +35,7 @@ COPY ./src/ /app/src/
 FROM source AS build
 ARG TARGET
 COPY ./src/ /app/src/
-#ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
 RUN cargo build --release --target $TARGET
 
 
