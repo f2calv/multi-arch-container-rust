@@ -29,3 +29,5 @@ $GITHUB_RUN_NUMBER = 0
     --pull `
     --push `
     .
+
+kubectl run -i --tty --attach aarch64test --image=192.168.1.245:32000/aarch64:registry

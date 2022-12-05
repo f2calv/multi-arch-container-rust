@@ -2,7 +2,7 @@
 
 export KUBECONFIG=/mnt/c/Users/alexv/.kube/config
 
-docker buildx create --name multiarchrust --use --config microk8s.toml
+docker buildx create --name multiarchrust2 --use --config microk8s.toml
 
 docker buildx build \
     -t 192.168.1.245:32000/aarch64:registry \

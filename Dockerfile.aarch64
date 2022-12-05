@@ -1,10 +1,7 @@
 FROM --platform=$BUILDPLATFORM rust AS base
 ARG TARGET
 RUN apt-get update && apt-get upgrade -y
-#RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross lld clang musl aarch64-linux-gnu-gcc
 RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross
-#RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross aarch64-linux-gnu-gcc
-#RUN apt-get install -y gcc-aarch64-linux-gnu
 RUN rustup target add $TARGET
 RUN rustup toolchain install stable-$TARGET
 
@@ -41,11 +38,10 @@ RUN cargo build --release --target $TARGET
 
 
 
-FROM gcr.io/distroless/cc AS final
+#FROM gcr.io/distroless/cc AS final
 #FROM gcr.io/distroless/cc:debug AS final
-#FROM rust:slim AS final
+FROM rust:slim as final
 ARG TARGET
-#WORKDIR /app/target/
 COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
 
 
@@ -66,4 +62,5 @@ ENV APP_GITHUB_RUN_ID=$GITHUB_RUN_ID
 ARG GITHUB_RUN_NUMBER=0
 ENV APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER
 
-ENTRYPOINT ["./multi-arch-container-rust"]
+#ENTRYPOINT ["./multi-arch-container-rust"]
+ENTRYPOINT ["/bin/bash"]
