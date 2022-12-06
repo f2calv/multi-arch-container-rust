@@ -2,6 +2,7 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
 
 kubectl delete po aarch64test
+kubectl get po
 
 $REGISTRY = "192.168.1.245:32000"
 $REPO_ROOT = git rev-parse --show-toplevel
@@ -48,7 +49,7 @@ $GITHUB_RUN_NUMBER = 0
     --pull `
     .
 
-#docker push "$REGISTRY/aarch64:$GIT_TAG"
+docker push "$REGISTRY/aarch64:$GIT_TAG"
 #docker run --rm -it --name temp 192.168.1.245:32000/aarch64:registry /bin/bash
 
 #kubectl run -i --tty --attach aarch64test --image=192.168.1.245:32000/aarch64:registry

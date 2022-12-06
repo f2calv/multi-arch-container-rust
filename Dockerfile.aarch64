@@ -35,9 +35,9 @@ RUN cargo build --release --target $TARGET
 
 
 
-#FROM gcr.io/distroless/cc AS final
+FROM --platform=$BUILDPLATFORM gcr.io/distroless/cc AS final
 #FROM gcr.io/distroless/cc:debug AS final
-FROM --platform=$BUILDPLATFORM rust:slim AS final
+#FROM --platform=$BUILDPLATFORM rust:slim AS final
 ARG TARGET
 WORKDIR /app
 COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
@@ -60,4 +60,4 @@ ENV APP_GITHUB_RUN_ID=$GITHUB_RUN_ID
 ARG GITHUB_RUN_NUMBER=0
 ENV APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER
 
-ENTRYPOINT ["./multi-arch-container-rust"]
+ENTRYPOINT ["/app/multi-arch-container-rust"]
