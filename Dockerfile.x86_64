@@ -9,11 +9,11 @@ RUN rustup toolchain install stable-$TARGET
 
 # FROM base AS dependencies
 # ARG TARGET
-# WORKDIR /app/
+# WORKDIR /app
 # #initialize empty application
 # RUN cargo init
 # #replace the toml dependency file with our own
-# COPY ./Cargo.toml ./Cargo.lock /app/
+# COPY ./Cargo.toml ./Cargo.lock /app
 # #run a build to download the dependencies
 # #RUN cargo build --release --target=$TARGET
 # RUN cargo fetch --target=$TARGET

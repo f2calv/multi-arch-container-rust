@@ -23,12 +23,12 @@ RUN rustup toolchain install stable-$TARGET
 # FROM dependencies AS source
 # COPY ./src/ /app/src/
 
-FROM base AS source
+FROM --platform=$BUILDPLATFORM base AS source
 WORKDIR /app
 COPY . .
 
 
-FROM source AS build
+FROM --platform=$BUILDPLATFORM source AS build
 ARG TARGET
 ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
 RUN cargo build --release --target $TARGET
@@ -37,10 +37,11 @@ RUN cargo build --release --target $TARGET
 
 #FROM gcr.io/distroless/cc AS final
 #FROM gcr.io/distroless/cc:debug AS final
-FROM rust:slim as final
+FROM --platform=$BUILDPLATFORM rust:slim AS final
 ARG TARGET
-#COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
-COPY --from=build /app/target .
+#WORKDIR /app/target/
+COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
+
 
 
 ARG GIT_REPO
@@ -59,5 +60,4 @@ ENV APP_GITHUB_RUN_ID=$GITHUB_RUN_ID
 ARG GITHUB_RUN_NUMBER=0
 ENV APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER
 
-#ENTRYPOINT ["./multi-arch-container-rust"]
-ENTRYPOINT ["/bin/bash"]
+ENTRYPOINT ["./multi-arch-container-rust"]
