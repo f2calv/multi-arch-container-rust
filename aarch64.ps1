@@ -44,10 +44,11 @@ $GITHUB_RUN_NUMBER = 0
     --build-arg GITHUB_RUN_ID=$GITHUB_RUN_ID `
     --build-arg GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER `
     --platform linux/arm64 `
+    --progress=plain `
     --pull `
     .
 
-docker push "$REGISTRY/aarch64:$GIT_TAG"
+#docker push "$REGISTRY/aarch64:$GIT_TAG"
 #docker run --rm -it --name temp 192.168.1.245:32000/aarch64:registry /bin/bash
 
-kubectl run -i --tty --attach aarch64test --image=192.168.1.245:32000/aarch64:registry
+#kubectl run -i --tty --attach aarch64test --image=192.168.1.245:32000/aarch64:registry

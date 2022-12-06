@@ -44,6 +44,7 @@ $GITHUB_RUN_NUMBER = 0
     --build-arg GITHUB_RUN_ID=$GITHUB_RUN_ID `
     --build-arg GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER `
     --platform linux/amd64 `
+    --progress=plain `
     --pull `
     .
 
