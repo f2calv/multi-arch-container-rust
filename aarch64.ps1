@@ -52,4 +52,4 @@ $GITHUB_RUN_NUMBER = 0
 docker push "$REGISTRY/aarch64:$GIT_TAG"
 #docker run --rm -it --name temp 192.168.1.245:32000/aarch64:registry /bin/bash
 
-#kubectl run -i --tty --attach aarch64test --image=192.168.1.245:32000/aarch64:registry
+#kubectl run -i --tty --attach aarch64test --image=192.168.1.245:32000/aarch64:registry --image-pull-policy='Always'
