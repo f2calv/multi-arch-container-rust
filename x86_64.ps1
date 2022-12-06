@@ -47,5 +47,6 @@ $GITHUB_RUN_NUMBER = 0
     --pull `
     .
 
+#docker push "$REGISTRY/x86_64:$GIT_TAG"
 #docker run --rm -it --name temp 192.168.1.245:32000/x86_64:registry /bin/bash
 docker run --rm -it --name temp 192.168.1.245:32000/x86_64:registry
