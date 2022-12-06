@@ -42,8 +42,8 @@ RUN cargo build --release --target $TARGET
 #FROM gcr.io/distroless/cc:debug AS final
 FROM rust:slim as final
 ARG TARGET
-COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
-
+#COPY --from=build /app/target/$TARGET/release/multi-arch-container-rust .
+COPY --from=build /app/target .
 
 
 ARG GIT_REPO

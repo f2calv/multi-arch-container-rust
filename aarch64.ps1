@@ -1,6 +1,8 @@
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = "Stop"
 
+kubectl delete po aarch64test
+
 $REGISTRY = "192.168.1.245:32000"
 $REPO_ROOT = git rev-parse --show-toplevel
 $GIT_REPO = $REPO_ROOT | Split-Path -Leaf

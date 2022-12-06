@@ -3,6 +3,8 @@
 userprofile=$(wslpath "$(wslvar USERPROFILE)")
 export KUBECONFIG=$userprofile/.kube/config
 
+kubectl delete po aarch64test
+
 docker buildx create --name multiarchrust2 --use --config microk8s.toml
 
 docker buildx build \
