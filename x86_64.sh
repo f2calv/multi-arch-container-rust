@@ -1,6 +1,7 @@
 #!/bin/sh
 
-export KUBECONFIG=/mnt/c/Users/Alex/.kube/config
+userprofile=$(wslpath "$(wslvar USERPROFILE)")
+export KUBECONFIG=$userprofile/.kube/config
 
 docker build -t 192.168.1.245:32000/x86_64:registry -f Dockerfile.x86_64 --build-arg TARGET=x86_64-unknown-linux-gnu .
 
