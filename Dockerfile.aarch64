@@ -17,7 +17,8 @@ RUN cargo init
 #replace the dependencies file with our own
 COPY Cargo.toml Cargo.lock /app
 #run a fetch to download the dependencies
-RUN cargo fetch --target=$TARGET
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+RUN cargo build --release --target $TARGET
 
 
 
