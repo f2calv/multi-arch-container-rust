@@ -3,10 +3,13 @@ WORKDIR /app
 RUN apt-get update && apt-get upgrade -y
 RUN rustup component add clippy
 RUN rustup component add rustfmt
+#todo: create fmt/clippy/test stages
 ARG TARGETPLATFORM
 RUN \
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-    echo 'ignore this! ignore this! ignore this! ignore this! ' ; \
+    echo 'need to add correct apt-gets here and also test building x86_64 FROM arm??... ' ; \
+    rustup target add x86_64-unknown-linux-gnu ; \
+    rustup toolchain install stable-x86_64-unknown-linux-gnu ; \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross ; \
     rustup target add aarch64-unknown-linux-gnu ; \
@@ -28,6 +31,7 @@ ARG TARGETPLATFORM
 RUN \
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     TARGET=x86_64-unknown-linux-gnu ; \
+    echo 'need to add correct env vars here and also test building from arm??... ' ; \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     TARGET=aarch64-unknown-linux-gnu ; \
     export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc ; \
@@ -40,7 +44,9 @@ elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
 && cargo fetch --target $TARGET
-#Note: for some reason we can't download and 'pre-build' the dependencies for speed here...
+#Note: for some reason we can't download and 'pre-build' the dependencies here... but it worked prior version of dockerfile
+#Note: if we stick with fetch we can remove all the exports from this section
+#TODO: move exports into external script due to repetition?
 #&& cargo build --release --target $TARGET
 
 
@@ -55,6 +61,7 @@ ARG TARGETPLATFORM
 RUN \
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     TARGET=x86_64-unknown-linux-gnu ; \
+    echo 'need to add correct env vars here and also test building from arm??... ' ; \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     TARGET=aarch64-unknown-linux-gnu ; \
     export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc ; \
@@ -67,7 +74,7 @@ elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
 && cargo build --release --target $TARGET && mv /app/target/$TARGET /app/target/final
-
+#Note: we rename the target path to 'final' so we don't need the TARGET variable in the final stage
 
 
 FROM gcr.io/distroless/cc AS final

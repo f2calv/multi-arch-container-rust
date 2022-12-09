@@ -26,3 +26,22 @@ $GITHUB_RUN_NUMBER = 0
     --pull `
     --push `
     .
+
+
+# & "docker" build `
+#     -t "$REGISTRY/multi-arch-container-rust:$GIT_TAG" `
+#     --build-arg GIT_REPO=$GIT_REPO `
+#     --build-arg GIT_TAG=$GIT_TAG `
+#     --build-arg GIT_BRANCH=$GIT_BRANCH `
+#     --build-arg GIT_COMMIT=$GIT_COMMIT `
+#     --build-arg GITHUB_WORKFLOW=$GITHUB_WORKFLOW `
+#     --build-arg GITHUB_RUN_ID=$GITHUB_RUN_ID `
+#     --build-arg GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER `
+#     --platform linux/arm64 `
+#     --progress=plain `
+#     --pull `
+#     .
+# docker push "$REGISTRY/multi-arch-container-rust:$GIT_TAG"
+#docker run --rm -it --name temp 192.168.1.245:32000/multi-arch-container-rust:registry /bin/bash
+
+#kubectl run -i --tty --attach multi-arch-container-rust --image=192.168.1.245:32000/multi-arch-container-rust:registry --image-pull-policy='Always'
