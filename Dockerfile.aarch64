@@ -17,13 +17,12 @@ COPY ./Cargo.toml ./Cargo.lock /app
 ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
 #run a fetch to download the dependencies
 RUN cargo fetch --target=$TARGET
-# RUN cargo fetch
 
-# FROM dependencies AS source
-# COPY ./src/ /app/src/
+
 
 FROM dependencies AS source
-COPY . .
+COPY src src
+
 
 
 FROM source AS build
