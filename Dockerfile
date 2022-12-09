@@ -1,5 +1,6 @@
 FROM --platform=$BUILDPLATFORM rust AS base
-RUN apt-get update && apt-get upgrade -y 
+ARG TARGET
+RUN apt-get update && apt-get upgrade -y
 RUN rustup component add clippy
 RUN rustup component add rustfmt
 #RUN cargo install cross

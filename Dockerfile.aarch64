@@ -2,6 +2,8 @@ FROM --platform=$BUILDPLATFORM rust AS base
 ARG TARGET
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross
+RUN rustup component add clippy
+RUN rustup component add rustfmt
 RUN rustup target add $TARGET
 RUN rustup toolchain install stable-$TARGET
 
@@ -13,8 +15,7 @@ WORKDIR /app
 #initialize an empty application
 RUN cargo init
 #replace the dependencies file with our own
-COPY ./Cargo.toml ./Cargo.lock /app
-ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+COPY Cargo.toml Cargo.lock /app
 #run a fetch to download the dependencies
 RUN cargo fetch --target=$TARGET
 
