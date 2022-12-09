@@ -7,24 +7,24 @@ RUN rustup toolchain install stable-$TARGET
 
 
 
-# FROM base AS dependencies
-# ARG TARGET
-# WORKDIR /app
-# #initialize empty application
-# RUN cargo init
-# #replace the toml dependency file with our own
-# COPY ./Cargo.toml ./Cargo.lock /app
-# #run a build to download the dependencies
-# #RUN cargo build --release --target=$TARGET
-# ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
-# #RUN cargo fetch --target=$TARGET
+FROM base AS dependencies
+ARG TARGET
+WORKDIR /app
+#initialize empty application
+RUN cargo init
+#replace the toml dependency file with our own
+COPY ./Cargo.toml ./Cargo.lock /app
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++
+#run a build to download & build the dependencies
+#RUN cargo build --release --target=$TARGET
+#run a fetch to download the dependencies
+RUN cargo fetch --target=$TARGET
 # RUN cargo fetch
 
 # FROM dependencies AS source
 # COPY ./src/ /app/src/
 
-FROM base AS source
-WORKDIR /app
+FROM dependencies AS source
 COPY . .
 
 
