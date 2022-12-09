@@ -38,18 +38,18 @@ async fn main() -> std::io::Result<()> {
         // );
 
         log::info!(
-            "Repository information; name '{}', branch '{}', commit '{}', tag '{}'",
-            app_settings.git_repo?,
-            app_settings.git_branch?,
-            app_settings.git_commit?,
-            app_settings.git_tag?,
+            "Repository information; name '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
+            app_settings.git_repo,
+            app_settings.git_branch,
+            app_settings.git_commit,
+            app_settings.git_tag,
         );
 
         log::info!(
-            "CI/CD information; GitHub Workflow '{}', run id '{}', run number '{}'",
-            app_settings.github_workflow?,
-            app_settings.github_run_id?,
-            app_settings.github_run_number?,
+            "CI/CD information; GitHub Workflow '{:?}', run id '{:?}', run number '{:?}'",
+            app_settings.github_workflow,
+            app_settings.github_run_id,
+            app_settings.github_run_number,
         );
 
         tokio::time::sleep(Duration::from_millis(2_000)).await;
