@@ -1,53 +1,77 @@
 FROM --platform=$BUILDPLATFORM rust AS base
-ARG TARGET
+WORKDIR /app
 RUN apt-get update && apt-get upgrade -y
 RUN rustup component add clippy
 RUN rustup component add rustfmt
-#RUN cargo install cross
+ARG TARGETPLATFORM
+RUN \
+if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    echo 'ignore this! ignore this! ignore this! ignore this! ' ; \
+elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross ; \
+    rustup target add aarch64-unknown-linux-gnu ; \
+    rustup toolchain install stable-aarch64-unknown-linux-gnu ; \
+elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
+    apt-get install -y g++-arm-linux-gnueabihf libc6-dev-armhf-cross ; \
+    rustup target add armv7-unknown-linux-gnueabihf ; \
+    rustup toolchain install stable-armv7-unknown-linux-gnueabihf ; \
+fi
+
+
 
 FROM base AS dependencies
-WORKDIR /app/
-#initialize empty application
+WORKDIR /app
+#initialize an empty application & replace the dependencies file with our own
 RUN cargo init
-#replace the toml dependency file with our own
-COPY ./Cargo.toml ./Cargo.lock /app/
-#run a build to download the dependencies
-RUN cargo build --release
-# ARG TARGETPLATFORM
-# RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-#     TARGET=x86_64-unknown-linux-gnu ; \
-#     elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-#     TARGET=aarch64-unknown-linux-gnu ; \
-#     fi \
-#     && cargo build --release --target=$TARGET
+COPY Cargo.toml Cargo.lock /app
+ARG TARGETPLATFORM
+RUN \
+if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    TARGET=x86_64-unknown-linux-gnu ; \
+elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    TARGET=aarch64-unknown-linux-gnu ; \
+    export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc ; \
+    export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc ; \
+    export CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ ; \
+elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
+    TARGET=armv7-unknown-linux-gnueabihf ; \
+    export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc ; \
+    export CC_armv7_unknown_Linux_gnueabihf=arm-linux-gnueabihf-gcc ; \
+    export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
+fi \
+&& cargo fetch --target $TARGET
+#Note: for some reason we can't download and 'pre-build' the dependencies for speed here...
+#&& cargo build --release --target $TARGET
+
 
 
 FROM dependencies AS source
-COPY ./src/ /app/src/
+COPY src src
 
-#https://www.docker.com/blog/cross-compiling-rust-code-for-multiple-architectures/
-#https://github.com/drone/tutorials/blob/master/content/rust/docker/rust-docker-arm64.md
+
 
 FROM source AS build
-RUN cargo build --release
-# ARG TARGETPLATFORM
-# RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-#     rustup target add x86_64-unknown-linux-gnu ; \
-#     rustup toolchain install x86_64-unknown-linux-gnu ; \
-#     TARGET=x86_64-unknown-linux-gnu ; \
-#     elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-#     rustup target add aarch64-unknown-linux-gnu ; \
-#     rustup toolchain install stable-aarch64-unknown-linux-gnu ; \
-#     TARGET=aarch64-unknown-linux-gnu ; \
-#     elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
-#     rustup target add armv7-unknown-linux-gnueabihf ; \
-#     rustup toolchain install stable-armv7-unknown-linux-gnueabihf ; \
-#     TARGET=armv7-unknown-linux-gnueabihf ; \
-#     fi \
-#     && cargo build --release --target=$TARGET
+ARG TARGETPLATFORM
+RUN \
+if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
+    TARGET=x86_64-unknown-linux-gnu ; \
+elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+    TARGET=aarch64-unknown-linux-gnu ; \
+    export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc ; \
+    export CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc ; \
+    export CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ ; \
+elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
+    TARGET=armv7-unknown-linux-gnueabihf ; \
+    export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc ; \
+    export CC_armv7_unknown_Linux_gnueabihf=arm-linux-gnueabihf-gcc ; \
+    export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
+fi \
+&& cargo build --release --target $TARGET && mv /app/target/$TARGET /app/target/final
+
+
 
 FROM gcr.io/distroless/cc AS final
-COPY --from=build /app/target/release/multi-arch-container-rust .
+COPY --from=build /app/target/final/release/multi-arch-container-rust .
 
 ARG GIT_REPO
 ENV APP_GIT_REPO=$GIT_REPO

@@ -13,7 +13,6 @@ $GITHUB_RUN_NUMBER = 0
 
 #https://github.com/docker/buildx/issues/94#issuecomment-534831828
 & "docker" buildx create --name multiarchcontainerrust --use --config microk8s.toml
-
 & "docker" buildx build `
     -t "$REGISTRY/multi-arch-container-rust:$GIT_TAG" `
     --build-arg GIT_REPO=$GIT_REPO `
@@ -23,7 +22,7 @@ $GITHUB_RUN_NUMBER = 0
     --build-arg GITHUB_WORKFLOW=$GITHUB_WORKFLOW `
     --build-arg GITHUB_RUN_ID=$GITHUB_RUN_ID `
     --build-arg GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER `
-    --platform linux/arm64 `
+    --platform linux/amd64,linux/arm64,linux/arm/v7 `
     --pull `
     --push `
     .
