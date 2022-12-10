@@ -8,7 +8,6 @@ export REGISTRY="192.168.1.245:32000"
 export GIT_REPO=$(basename `git rev-parse --show-toplevel`)
 export GIT_BRANCH=$(git branch --show-current)
 export GIT_COMMIT=$(git rev-parse HEAD)
-#export GIT_TAG="dev"
 export GIT_TAG="registry"
 export GITHUB_WORKFLOW="n/a"
 export GITHUB_RUN_ID=0
