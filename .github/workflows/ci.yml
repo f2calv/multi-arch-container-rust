@@ -46,9 +46,12 @@ jobs:
   build_image:
     runs-on: ubuntu-latest
     needs: build_app
-    defaults:
-      run:
-        shell: bash
+
+    #https://github.blog/changelog/2021-04-20-github-actions-control-permissions-for-github_token/
+    #https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      packages: write #for pushing container image
+
     env:
       REGISTRY: ghcr.io
       #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
@@ -56,6 +59,7 @@ jobs:
       GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
       GIT_BRANCH: ${{ github.ref }}
       GIT_COMMIT: ${{ github.sha }}
+
     steps:
 
       - uses: actions/checkout@v3
@@ -70,30 +74,38 @@ jobs:
         run: echo "GIT_TAG=dev" >> $GITHUB_ENV
 
       - name: image:base
-        run: docker build -t image:base . --target base
+        run: docker build --platform linux/amd64 -t image:base . --target base
+        if: false #debug
 
       - name: image:dependencies
-        run: docker build -t image:dependencies . --target dependencies
+        run: docker build --platform linux/amd64 -t image:dependencies . --target dependencies
+        if: false #debug
 
       - name: image:source
-        run: docker build -t image:source . --target source
+        run: docker build --platform linux/amd64 -t image:source . --target source
+        if: false #debug
 
       - name: image:build
-        run: docker build -t image:build . --target build
+        run: docker build --platform linux/amd64 -t image:build . --target build
+        if: false #debug
 
       - name: image:final
-        run: docker build -t image:final . --target final
+        run: docker build --platform linux/amd64 -t image:final . --target final
+        if: false #debug
 
       - name: cargo version
         run: cargo version
+        if: false #debug
 
       - name: cargo fmt
         run: docker run --rm --name fmt image:source cargo fmt --all --check
-        if: always()
+        #if: always()
+        if: false #debug
 
       - name: cargo clippy
         run: docker run --rm --name clippy image:source cargo clippy -- -D warnings
-        if: always()
+        #if: always()
+        if: false #debug
 
       # - name: cargo test
       #   run: docker run --rm --name clippy image:build cargo test
@@ -102,10 +114,12 @@ jobs:
       - name: docker login ${{ env.REGISTRY }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
 
-      - name: docker build
+      - name: docker buildx build
         run: |
-          docker build \
+          docker buildx create --name multiarchtest --use
+          docker buildx build \
             -t $REGISTRY/$REPOSITORY:$GIT_TAG \
+            -t $REGISTRY/$REPOSITORY:latest \
             --label "GITHUB_RUN_ID=${{ github.run_id }}" \
             --label "IMAGE_NAME=$IMAGE_NAME" \
             --build-arg GIT_REPO=$GIT_REPO \
@@ -115,11 +129,7 @@ jobs:
             --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
             --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
             --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
+            --platform linux/amd64,linux/arm64,linux/arm/v7 \
             --pull \
+            --push \
             .
-        #if: github.ref == 'refs/heads/main'
-
-      - name: docker push
-        run: docker push $REGISTRY/$REPOSITORY:$GIT_TAG
-        #if: github.ref == 'refs/heads/main'
-        if: false
