@@ -1,5 +1,8 @@
 #!/bin/sh
 
+userprofile=$(wslpath "$(wslvar USERPROFILE)")
+export KUBECONFIG=$userprofile/.kube/config
+
 #set env variables during debugging
 export REGISTRY="192.168.1.245:32000"
 export GIT_REPO=$(basename `git rev-parse --show-toplevel`)
