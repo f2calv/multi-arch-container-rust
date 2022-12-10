@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: aarch64
+  name: multi-arch-container-rust
   labels:
-    app: aarch64
+    app: multi-arch-container-rust
 spec:
   replicas: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
-      app: aarch64
+      app: multi-arch-container-rust
   template:
     metadata:
       labels:
-        app: aarch64
+        app: multi-arch-container-rust
     spec:
       containers:
       - name: primary
-        image: 192.168.1.245:32000/aarch64:registry
+        image: 192.168.1.245:32000/multi-arch-container-rust:registry
         imagePullPolicy: Always
         # ports:
         # - name: http
@@ -72,7 +72,7 @@ spec:
 # apiVersion: v1
 # kind: Service
 # metadata:
-#   name: aarch64-svc
+#   name: multi-arch-container-rust-svc
 # spec:
 #   type: ClusterIP
 #   ports:
@@ -89,4 +89,4 @@ spec:
 #     port: 5000
 #     targetPort: 5000
 #   selector:
-#     app: aarch64
+#     app: multi-arch-container-rust
