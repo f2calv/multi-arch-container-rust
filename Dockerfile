@@ -7,7 +7,8 @@ RUN rustup component add rustfmt
 ARG TARGETPLATFORM
 RUN \
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-    echo 'need to add correct apt-gets here and also test building x86_64 FROM arm??... ' ; \
+    echo 'need to test below libs and also test building x86_64 FROM arm??... ' ; \
+    apt-get install -y g++-x86-64-linux-gnu libc6-dev-amd64-cross ; \
     rustup target add x86_64-unknown-linux-gnu ; \
     rustup toolchain install stable-x86_64-unknown-linux-gnu ; \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
