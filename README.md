@@ -8,7 +8,7 @@ As well as running multiple workloads on the Pi 4 in addition I sometimes run si
 
 Although I could acheive my goal of deploying the same application to multiple architectures using seperate Dockerfiles (i.e. Dockerfile.amd64, Dockerfile.arm64, etc...) in my view that is messy and makes the CI/CD overly complex.
 
-This repository contains my learnings and provides a fully working example of building a .NET application container image that is capable of targetting multiple platform architectures - all from a single Dockerfile.
+This repository contains my learnings and provides a fully working example of building a Rust application container image that is capable of targetting multiple platform architectures - all from a single Dockerfile.
 
 If you find this repository of use then please massage my ego by giving this repository a :star: ... :wink:
 
@@ -18,7 +18,6 @@ If you find this repository of use then please massage my ego by giving this rep
 - Create GitHub Actions workflow to;
 
   - Push finished multi-architecture container images to GitHub packages.
-  - Push packaged Helm chart to GitHub packages.
 
 ## Run Demo Build
 
@@ -51,7 +50,7 @@ GITHUB_WORKFLOW="n/a"
 GITHUB_RUN_ID=0
 GITHUB_RUN_NUMBER=0
 IMAGE_NAME="$GIT_REPO:$GIT_TAG"
-#Note: for the demo you have to select just a single architecture, in the workflow you can build (and push) for all architectures.
+#Note: you cannot export a buildx container image with manifests, so you have to select just a single architecture
 #$PLATFORM="linux/amd64,linux/arm64,linux/arm/v7"
 PLATFORM="linux/amd64"
 
@@ -87,6 +86,10 @@ read -p "Hit ENTER to run the '$IMAGE_NAME' image..."
 #Run the multi-architecture container image
 #https://docs.docker.com/engine/reference/commandline/run/
 docker run --rm -it --name $GIT_REPO $IMAGE_NAME
+
+#userprofile=$(wslpath "$(wslvar USERPROFILE)")
+#export KUBECONFIG=$userprofile/.kube/config
+#kubectl run -i --tty --attach multi-arch-container-rust --image=gcr.io/f2calv/multi-arch-container-rust --image-pull-policy='Always'
 ```
 
 ## Docker, Container & Rust Resources

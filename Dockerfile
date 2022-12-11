@@ -45,8 +45,8 @@ elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
 && cargo fetch --target $TARGET
-#Note: for some reason we can't download and 'pre-build' the dependencies here... but it worked prior version of dockerfile
-#Note: if we stick with fetch we can remove all the exports from this section
+#Note: for some reason we can't download and 'pre-build' the dependencies here... but this method worked pre-multi-arch
+#Note: if we stick with fetch we can remove all the above exports from this section
 #TODO: move exports into external script due to repetition?
 #&& cargo build --release --target $TARGET
 
@@ -75,7 +75,7 @@ elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
 && cargo build --release --target $TARGET && mv /app/target/$TARGET /app/target/final
-#Note: we rename the target path to 'final' so we don't need the TARGET variable in the final stage
+#Note: we rename the target folder to 'final' so we don't need the TARGET variable in the final stage
 
 
 FROM gcr.io/distroless/cc AS final

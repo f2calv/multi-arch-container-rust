@@ -1,8 +1,5 @@
 #!/bin/sh
 
-#userprofile=$(wslpath "$(wslvar USERPROFILE)")
-#export KUBECONFIG=$userprofile/.kube/config
-
 #set variables to emulate running in the workflow/pipeline
 GIT_REPO=$(basename `git rev-parse --show-toplevel`)
 GIT_BRANCH=$(git branch --show-current)
@@ -48,3 +45,7 @@ read -p "Hit ENTER to run the '$IMAGE_NAME' image..."
 #Run the multi-architecture container image
 #https://docs.docker.com/engine/reference/commandline/run/
 docker run --rm -it --name $GIT_REPO $IMAGE_NAME
+
+#userprofile=$(wslpath "$(wslvar USERPROFILE)")
+#export KUBECONFIG=$userprofile/.kube/config
+#kubectl run -i --tty --attach multi-arch-container-rust --image=gcr.io/f2calv/multi-arch-container-rust --image-pull-policy='Always'
