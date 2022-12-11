@@ -1,5 +1,7 @@
 # Multi-Architecture Container Image w/Rust
 
+> Note: [Click here for .NET version of this repository...](https://github.com/f2calv/multi-arch-container-dotnet)
+
 ## Introduction
 
 I've been developing a service orientated smart home system which consists of a number of separate containerised workloads all running on an edge Kubernetes cluster (via [Microk8s](https://github.com/canonical/microk8s)), the "cluster" itself is a sole Raspberry Pi 4 (ARMv8).
