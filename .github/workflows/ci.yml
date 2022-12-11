@@ -63,8 +63,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@v3
-        # with:
-        #   fetch-depth: 0
+        with:
+          fetch-depth: 0
 
       - name: set vars (1 of 2)
         run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
