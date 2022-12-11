@@ -52,13 +52,13 @@ jobs:
     permissions:
       packages: write #for pushing container image
 
-    env:
-      REGISTRY: ghcr.io
-      #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
-      GIT_REPO: ${{ github.repository }}
-      GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
-      GIT_BRANCH: ${{ github.ref }}
-      GIT_COMMIT: ${{ github.sha }}
+    # env:
+    #   REGISTRY: ghcr.io
+    #   #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
+    #   GIT_REPO: ${{ github.repository }}
+    #   GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
+    #   GIT_BRANCH: ${{ github.ref }}
+    #   GIT_COMMIT: ${{ github.sha }}
 
     steps:
 
