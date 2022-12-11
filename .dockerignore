@@ -1,0 +1,6 @@
+# first ignore everything
+*
+# explictly add exceptions for required files/paths
+!src/**
+!Cargo.toml
+!Cargo.lock

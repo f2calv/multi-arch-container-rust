@@ -1,11 +1,12 @@
 #!/bin/sh
 
+echo "postStartCommand.sh"
+echo "-------------------"
+
 sudo apt-get update
 sudo apt-get upgrade -y
 
 rustup --version
-#rustup toolchain install nightly --component rust-analyzer-preview
-
 rustc --version
 
 # alias cls="clear"

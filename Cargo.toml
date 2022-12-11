@@ -1,0 +1,17 @@
+[package]
+name = "multi-arch-container-rust"
+authors = ["Alex Vincent <alex@far2cool.com>"]
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+env_logger = "0"
+config = "0"
+log = "0"
+ctrlc = "3"
+tokio = { version = "1", features = ["full"] }
+serde = "1"
+serde_json = "1"
+sys-info = "0"
