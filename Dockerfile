@@ -7,7 +7,7 @@ RUN rustup component add rustfmt
 ARG TARGETPLATFORM
 RUN \
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
-    echo 'need to test below libs and also test building x86_64 FROM arm??... ' ; \
+    echo 'TODO: need to complete and test building x86_64 FROM an arm platform??... ' ; \
     apt-get install -y g++-x86-64-linux-gnu libc6-dev-amd64-cross ; \
     rustup target add x86_64-unknown-linux-gnu ; \
     rustup toolchain install stable-x86_64-unknown-linux-gnu ; \
@@ -25,14 +25,14 @@ fi
 
 FROM base AS dependencies
 WORKDIR /app
-#initialize an empty application & replace the dependencies file with our own
+#initialize an empty application & replace the dependencies file with our own (yes cargo chef can do this, but I feel this is simpler...)
 RUN cargo init
 COPY Cargo.toml Cargo.lock /app
 ARG TARGETPLATFORM
 RUN \
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     TARGET=x86_64-unknown-linux-gnu ; \
-    echo 'need to add correct env vars here and also test building from arm??... ' ; \
+    echo 'TODO: need to complete and test building x86_64 FROM an arm platform??... ' ; \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     TARGET=aarch64-unknown-linux-gnu ; \
     export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc ; \
@@ -45,10 +45,9 @@ elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
 && cargo fetch --target $TARGET
-#Note: for some reason we can't download and 'pre-build' the dependencies here... but this method worked pre-multi-arch
-#Note: if we stick with fetch we can remove all the above exports from this section
-#TODO: move exports into external script due to repetition?
 #&& cargo build --release --target $TARGET
+#Note: for some reason we can't download and 'pre-build' just the dependencies here... but this method worked before working with a multi-arch dockerfile, so here we just fetch.
+#Note: if we remain with 'fetch' we can remove all the above exports from this section, else we can move the 'exports' into external script due to repetition?
 
 
 
@@ -62,7 +61,7 @@ ARG TARGETPLATFORM
 RUN \
 if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     TARGET=x86_64-unknown-linux-gnu ; \
-    echo 'need to add correct env vars here and also test building from arm??... ' ; \
+    echo 'TODO: need to complete and test building x86_64 FROM an arm platform??... ' ; \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     TARGET=aarch64-unknown-linux-gnu ; \
     export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc ; \
@@ -75,7 +74,7 @@ elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
 && cargo build --release --target $TARGET && mv /app/target/$TARGET /app/target/final
-#Note: we rename the target folder to 'final' so we don't need the TARGET variable in the final stage
+#Note: rename the target folder to 'final' so we don't need to use the TARGET arg in the final stage
 
 
 FROM gcr.io/distroless/cc AS final
