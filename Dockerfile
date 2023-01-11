@@ -44,7 +44,9 @@ elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     export CC_armv7_unknown_Linux_gnueabihf=arm-linux-gnueabihf-gcc ; \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
-&& cargo build --release --target $TARGET
+&& cargo fetch --target $TARGET
+#&& cargo build --release --target $TARGET
+#https://github.com/f2calv/multi-arch-container-rust/issues/15
 
 
 
