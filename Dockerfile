@@ -1,4 +1,3 @@
-FROM --platform=$BUILDPLATFORM rust AS base
 WORKDIR /app
 RUN apt-get update && apt-get upgrade -y
 RUN rustup component add clippy
@@ -44,10 +43,7 @@ elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     export CC_armv7_unknown_Linux_gnueabihf=arm-linux-gnueabihf-gcc ; \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
-&& cargo fetch --target $TARGET
-#&& cargo build --release --target $TARGET
-#Note: for some reason we can't download and 'pre-build' just the dependencies here... but this method worked before working with a multi-arch dockerfile, so here we just fetch.
-#Note: if we remain with 'fetch' we can remove all the above exports from this section, else we can move the 'exports' into external script due to repetition?
+&& cargo build --release --target $TARGET
 
 
 
