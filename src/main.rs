@@ -13,7 +13,7 @@ async fn main() -> std::io::Result<()> {
     //Load app settings from env variables
     let app_settings = get_configuration().expect("configuration issue");
 
-    log::debug!("application started... try this!");
+    log::debug!("application started from a multi-architecture container image...");
 
     // Set a watch on Ctrl-C, http://detegr.github.io/doc/ctrlc/
     let running = Arc::new(AtomicBool::new(true));
@@ -38,7 +38,7 @@ async fn main() -> std::io::Result<()> {
         // );
 
         log::info!(
-            "Repository information; name '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
+            "Git information; name '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
             app_settings.git_repo,
             app_settings.git_branch,
             app_settings.git_commit,
@@ -46,7 +46,7 @@ async fn main() -> std::io::Result<()> {
         );
 
         log::info!(
-            "CI/CD information; GitHub Workflow '{:?}', run id '{:?}', run number '{:?}'",
+            "GitHub information; workflow '{:?}', run id '{:?}', run number '{:?}'",
             app_settings.github_workflow,
             app_settings.github_run_id,
             app_settings.github_run_number,
