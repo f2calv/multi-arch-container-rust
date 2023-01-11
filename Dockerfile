@@ -1,3 +1,4 @@
+FROM --platform=$BUILDPLATFORM rust AS base
 WORKDIR /app
 RUN apt-get update && apt-get upgrade -y
 RUN rustup component add clippy
