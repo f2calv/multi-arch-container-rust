@@ -13,8 +13,6 @@ async fn main() -> std::io::Result<()> {
     //Load app settings from env variables
     let app_settings = get_configuration().expect("configuration issue");
 
-    log::debug!("application started from a multi-architecture container image...");
-
     // Set a watch on Ctrl-C, http://detegr.github.io/doc/ctrlc/
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
@@ -24,18 +22,15 @@ async fn main() -> std::io::Result<()> {
     .expect("Error setting Ctrl-C handler");
 
     log::info!("Hit Ctrl-C to exit....");
+
     while running.load(Ordering::SeqCst) {
-        // let appName = "AppDomain.CurrentDomain.FriendlyName"; //TODO
-        // let ProcessArchitecture = "RuntimeInformation.ProcessArchitecture"; //TODO
-        // let OSArchitecture = "RuntimeInformation.OSArchitecture"; //TODO
-        // let OSDescription = "RuntimeInformation.OSDescription"; //TODO
-        // log::info!(
-        //     "App '{}' on [Process Architecture: {}, OSArchitecture: {}, OSDescription: {}].",
-        //     appName,
-        //     ProcessArchitecture,
-        //     OSArchitecture,
-        //     OSDescription
-        // );
+        log::info!(
+            "App '{}' on [Process Architecture: {}, OSDescription: {} {}].",
+            get_app_name(),
+            get_arch(),
+            os_type().unwrap(),
+            os_release().unwrap(),
+        );
 
         log::info!(
             "Git information; name '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
@@ -52,11 +47,7 @@ async fn main() -> std::io::Result<()> {
             app_settings.github_run_number,
         );
 
-        tokio::time::sleep(Duration::from_millis(2_000)).await;
-
-        print_sysinfo();
-
-        tokio::time::sleep(Duration::from_millis(2_000)).await;
+        tokio::time::sleep(Duration::from_millis(3_000)).await;
     }
 
     Ok(())
@@ -94,41 +85,23 @@ impl std::fmt::Display for AppSettings {
     }
 }
 
-fn print_sysinfo() {
-    log::debug!("os: {} {}", os_type().unwrap(), os_release().unwrap());
-    log::debug!(
-        "cpu: {} cores, {} MHz",
-        cpu_num().unwrap(),
-        cpu_speed().unwrap()
-    );
-    log::debug!("proc total: {}", proc_total().unwrap());
-    let load = loadavg().unwrap();
-    log::debug!("load: {} {} {}", load.one, load.five, load.fifteen);
-    let mem = mem_info().unwrap();
-    log::debug!(
-        "mem: total {} KB, free {} KB, avail {} KB, buffers {} KB, cached {} KB",
-        mem.total,
-        mem.free,
-        mem.avail,
-        mem.buffers,
-        mem.cached
-    );
-    log::debug!(
-        "swap: total {} KB, free {} KB",
-        mem.swap_total,
-        mem.swap_free
-    );
-    #[cfg(not(target_os = "solaris"))]
-    {
-        let disk = disk_info().unwrap();
-        log::debug!("disk: total {} KB, free {} KB", disk.total, disk.free);
-    }
-    log::debug!("hostname: {}", hostname().unwrap());
-    #[cfg(not(target_os = "windows"))]
-    {
-        let t = boottime().unwrap();
-        log::debug!("boottime {} sec, {} usec", t.tv_sec, t.tv_usec);
-    }
-    // #[cfg(target_os = "linux")]
-    // log::debug!("/etc/os-release: {:?}", linux_os_release().unwrap());
+fn get_arch() -> String {
+    #[cfg(target_arch = "x86")]
+    let arch = String::from("x86");
+    #[cfg(target_arch = "x86_64")]
+    let arch = String::from("x86_64");
+    #[cfg(target_arch = "arm")]
+    let arch = String::from("arm");
+    #[cfg(target_arch = "aarch64")]
+    let arch = String::from("aarch64");
+    arch
+}
+
+fn get_app_name() -> String {
+    std::env::current_exe()
+        .expect("Can't get the exec path")
+        .file_name()
+        .expect("Can't get the exec name")
+        .to_string_lossy()
+        .into_owned()
 }
