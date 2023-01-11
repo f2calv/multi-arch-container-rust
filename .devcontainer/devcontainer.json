@@ -51,6 +51,11 @@
 	"remoteUser": "vscode",
 	"features": {
 		"docker-in-docker": "latest",
+		"kubectl-helm-minikube": {
+			"version": "latest",
+			"helm": "3.9.2",
+			"minikube": "none"
+		},
 		"powershell": "latest"
 	}
 }
