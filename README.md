@@ -50,7 +50,8 @@ First clone the repository (ideally by opening it as [vscode devcontainer](https
   ```
 
 ### Shell Demo Script
-```shell
+
+```bash
 #!/bin/sh
 
 #set variables to emulate running in the workflow/pipeline
