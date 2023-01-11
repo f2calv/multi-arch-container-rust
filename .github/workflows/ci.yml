@@ -162,5 +162,6 @@ jobs:
             .
 
   release:
+    needs: [build_app, build_image]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
