@@ -25,24 +25,25 @@ jobs:
   build_app:
     runs-on: ubuntu-latest
     outputs:
-      SemVer: ${{ steps.gitversion.outputs.SemVer }}
-      FullSemVer: ${{ steps.gitversion.outputs.FullSemVer }}
+      semVer: ${{ steps.gitversion.outputs.semVer }}
+      fullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}
 
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: gitversion
-        shell: pwsh
+      - name: gitversion (1 of 2)
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: 5.x
+
+      - name: gitversion (2 of 2)
         id: gitversion
-        run: |
-          dotnet tool update -g GitVersion.Tool
-          $GitVersion = dotnet-gitversion ${{ github.workspace }} /nofetch | ConvertFrom-Json
-          Write-Host "SemVer=$($GitVersion.SemVer)"
-          echo "SemVer=$($GitVersion.SemVer)" >> $env:GITHUB_OUTPUT
-          Write-Host "FullSemVer=$($GitVersion.FullSemVer)"
-          echo "FullSemVer=$($GitVersion.FullSemVer)" >> $env:GITHUB_OUTPUT
+        uses: gittools/actions/gitversion/execute@v0
+        with:
+          useConfigFile: true
+          additionalArguments: /nofetch
 
       - name: cargo fetch
         run: cargo fetch
@@ -102,7 +103,7 @@ jobs:
       REGISTRY: ghcr.io
       #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
       GIT_REPO: ${{ github.repository }}
-      GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
+      GIT_TAG: ${{ needs.build_app.outputs.semVer }}
       GIT_BRANCH: ${{ github.ref }}
       GIT_COMMIT: ${{ github.sha }}
 
@@ -174,7 +175,7 @@ jobs:
     env:
       REGISTRY: ghcr.io
       #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
-      GIT_TAG: ${{ needs.build_app.outputs.SemVer }}
+      GIT_TAG: ${{ needs.build_app.outputs.semVer }}
       HELM_EXPERIMENTAL_OCI: 1
       HELM_VERSION_TO_INSTALL: 3.9.2 #Note: keep this version in sync inside the devcontainer
 
@@ -240,3 +241,5 @@ jobs:
     needs: [build_app, build_image, push_chart]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
+    with:
+      tag-prefix: ''
