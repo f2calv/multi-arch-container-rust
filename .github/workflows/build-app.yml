@@ -1,0 +1,36 @@
+name: build-app
+
+on:
+  workflow_call:
+    inputs:
+      fullSemVer:
+        type: string
+        description: e.g. 1.2.3-feature-my-feature.12
+        required: true
+
+jobs:
+  build-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: cargo version
+        run: cargo version
+        if: false #debug
+
+      - name: cargo fmt
+        run: cargo fmt --all --check
+
+      - name: cargo clippy
+        run: cargo clippy -- -D warnings
+
+      - name: cargo fetch
+        run: cargo fetch
+
+      - name: cargo build
+        run: cargo build --release
+
+      # - name: cargo test
+      #   run: cargo test
+
+      #TODO: could run cargo test here, etc...

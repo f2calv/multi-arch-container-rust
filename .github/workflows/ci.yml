@@ -22,73 +22,26 @@ env:
   IMAGE_NAME: multi-arch-container-rust
 
 jobs:
-  build_app:
-    runs-on: ubuntu-latest
-    outputs:
-      semVer: ${{ steps.gitversion.outputs.semVer }}
-      fullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}
+  versioning:
+    uses: ./.github/workflows/versioning.yml
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+jobs:
+  versioning:
+    uses: ./.github/workflows/versioning.yml
 
-      - name: gitversion (1 of 2)
-        uses: gittools/actions/gitversion/setup@v0
-        with:
-          versionSpec: 5.x
+  app:
+    uses: ./.github/workflows/build-app.yml
+    needs: versioning
+    with:
+      fullSemVer: ${{ needs.versioning.outputs.fullSemVer }}
 
-      - name: gitversion (2 of 2)
-        id: gitversion
-        uses: gittools/actions/gitversion/execute@v0
-        with:
-          useConfigFile: true
-          additionalArguments: /nofetch
+  image:
+    uses: ./.github/workflows/build-image.yml
+    needs: [versioning, app]
+    with:
+      semVer: ${{ needs.versioning.outputs.semVer }}
 
-      - name: cargo fetch
-        run: cargo fetch
 
-      - name: cargo build
-        run: cargo build --release
-
-      #TODO: enable other ci processes here
-      - name: image:base
-        run: docker build --platform linux/amd64 -t image:base . --target base
-        if: false #debug
-
-      - name: image:dependencies
-        run: docker build --platform linux/amd64 -t image:dependencies . --target dependencies
-        if: false #debug
-
-      - name: image:source
-        run: docker build --platform linux/amd64 -t image:source . --target source
-        if: false #debug
-
-      - name: image:build
-        run: docker build --platform linux/amd64 -t image:build . --target build
-        if: false #debug
-
-      - name: image:final
-        run: docker build --platform linux/amd64 -t image:final . --target final
-        if: false #debug
-
-      - name: cargo version
-        run: cargo version
-        if: false #debug
-
-      - name: cargo fmt
-        run: docker run --rm --name fmt image:source cargo fmt --all --check
-        #if: always()
-        if: false #debug
-
-      - name: cargo clippy
-        run: docker run --rm --name clippy image:source cargo clippy -- -D warnings
-        #if: always()
-        if: false #debug
-
-      # - name: cargo test
-      #   run: docker run --rm --name clippy image:build cargo test
-      #   if: always()
 
   build_image:
     runs-on: ubuntu-latest
