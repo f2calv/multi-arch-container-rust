@@ -238,8 +238,9 @@ jobs:
         if: false #not implemented/working yet, need to change the chart version in filename
 
   release:
-    needs: [build_app, build_image, push_chart]
+    needs: [build_app, build_image, push_chart]]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     with:
       tag-prefix: ''
+      move-major-tag: false
