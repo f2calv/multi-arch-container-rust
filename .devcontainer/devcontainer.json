@@ -36,13 +36,13 @@
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"vadimcn.vscode-lldb",
-				"mutantdino.resourcemonitor",
 				"rust-lang.rust-analyzer",
 				"tamasfe.even-better-toml",
 				"serayuzgur.crates",
+				"ms-vscode.azurecli",
 				"ms-azuretools.vscode-docker",
 				"ms-vscode-remote.vscode-remote-extensionpack",
-				"ms-azure-devops.azure-pipelines"
+				"mutantdino.resourcemonitor"
 			]
 		}
 	},
