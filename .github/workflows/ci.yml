@@ -18,228 +18,33 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened]
 
-env:
-  IMAGE_NAME: multi-arch-container-rust
-
 jobs:
-  build_app:
-    runs-on: ubuntu-latest
-    outputs:
-      semVer: ${{ steps.gitversion.outputs.semVer }}
-      fullSemVer: ${{ steps.gitversion.outputs.fullSemVer }}
+  versioning:
+    uses: ./.github/workflows/versioning.yml
 
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+  app:
+    uses: ./.github/workflows/build-app.yml
+    needs: versioning
+    with:
+      fullSemVer: ${{ needs.versioning.outputs.fullSemVer }}
 
-      - name: gitversion (1 of 2)
-        uses: gittools/actions/gitversion/setup@v0
-        with:
-          versionSpec: 5.x
+  image:
+    uses: ./.github/workflows/build-image.yml
+    needs: [versioning, app]
+    with:
+      semVer: ${{ needs.versioning.outputs.semVer }}
 
-      - name: gitversion (2 of 2)
-        id: gitversion
-        uses: gittools/actions/gitversion/execute@v0
-        with:
-          useConfigFile: true
-          additionalArguments: /nofetch
-
-      - name: cargo fetch
-        run: cargo fetch
-
-      - name: cargo build
-        run: cargo build --release
-
-      #TODO: enable other ci processes here
-      - name: image:base
-        run: docker build --platform linux/amd64 -t image:base . --target base
-        if: false #debug
-
-      - name: image:dependencies
-        run: docker build --platform linux/amd64 -t image:dependencies . --target dependencies
-        if: false #debug
-
-      - name: image:source
-        run: docker build --platform linux/amd64 -t image:source . --target source
-        if: false #debug
-
-      - name: image:build
-        run: docker build --platform linux/amd64 -t image:build . --target build
-        if: false #debug
-
-      - name: image:final
-        run: docker build --platform linux/amd64 -t image:final . --target final
-        if: false #debug
-
-      - name: cargo version
-        run: cargo version
-        if: false #debug
-
-      - name: cargo fmt
-        run: docker run --rm --name fmt image:source cargo fmt --all --check
-        #if: always()
-        if: false #debug
-
-      - name: cargo clippy
-        run: docker run --rm --name clippy image:source cargo clippy -- -D warnings
-        #if: always()
-        if: false #debug
-
-      # - name: cargo test
-      #   run: docker run --rm --name clippy image:build cargo test
-      #   if: always()
-
-  build_image:
-    runs-on: ubuntu-latest
-    needs: build_app
-
-    #https://github.blog/changelog/2021-04-20-github-actions-control-permissions-for-github_token/
-    #https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
-    permissions:
-      packages: write #for pushing container image
-
-    env:
-      REGISTRY: ghcr.io
-      #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
-      GIT_REPO: ${{ github.repository }}
-      GIT_TAG: ${{ needs.build_app.outputs.semVer }}
-      GIT_BRANCH: ${{ github.ref }}
-      GIT_COMMIT: ${{ github.sha }}
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: set vars (1 of 2)
-        run: echo "REPOSITORY=${{ github.repository_owner }}/$IMAGE_NAME" >> $GITHUB_ENV
-
-      - name: set vars (2 of 2)
-        if: github.ref != 'refs/heads/main' #non-default branch use a simplistic SemVer
-        run: echo "GIT_TAG=dev" >> $GITHUB_ENV
-
-      - name: docker login ${{ env.REGISTRY }}
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login $REGISTRY -u ${{ github.actor }} --password-stdin
-
-      - name: docker buildx build/push
-        if: github.ref == 'refs/heads/main'
-        run: |
-          docker buildx create --name multiarchtest --use
-          docker buildx build \
-            -t $REGISTRY/$REPOSITORY:$GIT_TAG \
-            -t $REGISTRY/$REPOSITORY:latest \
-            --label "GITHUB_RUN_ID=${{ github.run_id }}" \
-            --label "IMAGE_NAME=$IMAGE_NAME" \
-            --build-arg GIT_REPO=$GIT_REPO \
-            --build-arg GIT_TAG=$GIT_TAG \
-            --build-arg GIT_BRANCH=$GIT_BRANCH \
-            --build-arg GIT_COMMIT=$GIT_COMMIT \
-            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
-            --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
-            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
-            --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            --pull \
-            --push \
-            .
-
-      - name: docker buildx build/push (dev)
-        if: github.ref != 'refs/heads/main'
-        run: |
-          docker buildx create --name multiarchtest --use
-          docker buildx build \
-            -t $REGISTRY/$REPOSITORY:$GIT_TAG \
-            --label "GITHUB_RUN_ID=${{ github.run_id }}" \
-            --label "IMAGE_NAME=$IMAGE_NAME" \
-            --build-arg GIT_REPO=$GIT_REPO \
-            --build-arg GIT_TAG=$GIT_TAG \
-            --build-arg GIT_BRANCH=$GIT_BRANCH \
-            --build-arg GIT_COMMIT=$GIT_COMMIT \
-            --build-arg GITHUB_WORKFLOW=${{ github.workflow }} \
-            --build-arg GITHUB_RUN_ID=${{ github.run_id }} \
-            --build-arg GITHUB_RUN_NUMBER=${{ github.run_number }} \
-            --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            --pull \
-            --push \
-            .
-
-  push_chart:
-    runs-on: ubuntu-latest
-    needs: [build_app, build_image]
+  chart:
+    uses: ./.github/workflows/build-chart.yml
+    needs: [versioning, app, image]
     if: github.ref == 'refs/heads/main'
-
-    permissions:
-      packages: write #for pushing helm package
-      contents: write #for creating releases/tags
-
-    env:
-      REGISTRY: ghcr.io
-      #REPOSITORY: Note: set dynamically, i.e. github.repository_owner+IMAGE_NAME
-      GIT_TAG: ${{ needs.build_app.outputs.semVer }}
-      HELM_EXPERIMENTAL_OCI: 1
-      HELM_VERSION_TO_INSTALL: 3.9.2 #Note: keep this version in sync inside the devcontainer
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 #Note: shallow clone may break git tag & ct lint...
-
-      - name: set vars
-        run: echo "REPOSITORY=${{ github.repository_owner }}/charts/$IMAGE_NAME" >> $GITHUB_ENV
-
-      - name: install helm
-        uses: azure/setup-helm@v3
-        with:
-          version: ${{ env.HELM_VERSION_TO_INSTALL }}
-
-      - name: helm registry login
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${REGISTRY}/${REPOSITORY} --username ${{ github.repository_owner }} --password-stdin
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.7
-        if: false #not implemented/working yet
-
-      - name: chart-testing (setup)
-        uses: helm/chart-testing-action@v2
-        if: false #not implemented/working yet
-
-      - name: chart-testing (run list-changed)
-        id: list-changed
-        run: |
-          changed=$(ct list-changed --target-branch main)
-          if [[ -n "$changed" ]]; then
-            echo "::set-output name=changed::true"
-          fi
-        if: false #not implemented/working yet
-
-      - name: chart-testing (run lint)
-        run: ct lint
-        if: false #not implemented/working yet
-
-      - name: create kind cluster
-        uses: helm/kind-action@v1
-        #if: steps.list-changed.outputs.changed == 'true'
-        if: false #not implemented/working yet
-
-      - name: chart-testing (run install)
-        run: ct install
-        if: false #not implemented/working yet
-
-      - name: helm package
-        run: |
-          helm package ${{ github.workspace }}/charts/$IMAGE_NAME/ --destination ${{ github.workspace }}/artifacts/ --app-version ${{ env.GIT_TAG }}
-        if: false #not implemented/working yet
-
-      - name: helm push
-        run: |
-          helm push ${{ github.workspace }}/artifacts/$IMAGE_NAME-0.1.0.tgz oci://ghcr.io/${{ github.repository_owner }}
-        if: false #not implemented/working yet, need to change the chart version in filename
+    with:
+      semVer: ${{ needs.versioning.outputs.semVer }}
 
   release:
-    needs: [build_app, build_image, push_chart]
+    needs: [versioning, app, image, chart]
     if: github.ref == 'refs/heads/main'
     uses: f2calv/gha-workflows/.github/workflows/gha-release-versioning.yml@v1
     with:
       tag-prefix: ''
+      move-major-tag: false
