@@ -14,11 +14,11 @@ if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross ; \
     rustup target add aarch64-unknown-linux-gnu ; \
-    rustup toolchain install aarch64-unknown-linux-gnu ; \
+    rustup toolchain install stable-aarch64-unknown-linux-gnu ; \
 elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     apt-get install -y g++-arm-linux-gnueabihf libc6-dev-armhf-cross ; \
     rustup target add armv7-unknown-linux-gnueabihf ; \
-    rustup toolchain install armv7-unknown-linux-gnueabihf ; \
+    rustup toolchain install stable-armv7-unknown-linux-gnueabihf ; \
 fi
 
 
