@@ -30,7 +30,7 @@ jobs:
 
   image:
     uses: ./.github/workflows/build-image.yml
-    needs: [versioning, app]
+    needs: [versioning]
     with:
       tag: ${{ needs.versioning.outputs.semVer }}
 
