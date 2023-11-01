@@ -48,10 +48,11 @@
 				"rust-lang.rust-analyzer",
 				"tamasfe.even-better-toml",
 				"serayuzgur.crates",
-				"ms-vscode.azurecli",
 				"ms-azuretools.vscode-docker",
 				"ms-vscode-remote.vscode-remote-extensionpack",
-				"mutantdino.resourcemonitor"
+				"mutantdino.resourcemonitor",
+				"usernamehw.errorlens",
+				"eamodio.gitlens"
 			]
 		}
 	},
