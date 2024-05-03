@@ -29,7 +29,11 @@ If you find this repository useful then give it a :star: ... :wink:
 #Run pre-built image on Docker
 docker run --pull always --rm -it ghcr.io/f2calv/multi-arch-container-rust
 
-#Run pre-built image on Kubernetes
+#Run pre-built image on Kubernetes (via Helm)
+helm upgrade --install multi-arch-container-rust oci://ghcr.io/f2calv/charts/multi-arch-container-rust
+#helm uninstall multi-arch-container-rust
+
+#Run pre-built image on Kubernetes (via kubectl)
 kubectl run -i --tty --attach multi-arch-container-rust --image=ghcr.io/f2calv/multi-arch-container-rust --image-pull-policy='Always'
 kubectl logs -f multi-arch-container-rust
 #kubectl delete po multi-arch-container-rust
