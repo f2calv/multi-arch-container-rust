@@ -43,7 +43,6 @@ jobs:
   chart:
     uses: f2calv/gha-workflows/.github/workflows/helm-chart-package.yml@v1
     needs: [versioning, app, image]
-    if: github.ref == 'refs/heads/main'
     with:
       tag: ${{ needs.versioning.outputs.semVer }}
 
@@ -54,5 +53,6 @@ jobs:
     permissions:
       contents: write
     with:
+      semVer: ${{ needs.versioning.outputs.semVer }}
       tag-prefix: ''
       move-major-tag: false
