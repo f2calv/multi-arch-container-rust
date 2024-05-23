@@ -33,8 +33,8 @@ async fn main() -> std::io::Result<()> {
         );
 
         log::info!(
-            "Git information; name '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
-            app_settings.git_repo,
+            "Git information; repository '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
+            app_settings.git_repository,
             app_settings.git_branch,
             app_settings.git_commit,
             app_settings.git_tag,
@@ -66,7 +66,7 @@ fn get_configuration() -> Result<AppSettings, ConfigError> {
 
 #[derive(Debug, serde::Deserialize)]
 struct AppSettings {
-    git_repo: Option<String>,
+    git_repository: Option<String>,
     git_branch: Option<String>,
     git_commit: Option<String>,
     git_tag: Option<String>,
@@ -79,8 +79,8 @@ impl std::fmt::Display for AppSettings {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "git_repo='{:?}', git_branch='{:?}'",
-            self.git_repo, self.git_branch
+            "git_repository='{:?}', git_branch='{:?}'",
+            self.git_repository, self.git_branch
         )
     }
 }
