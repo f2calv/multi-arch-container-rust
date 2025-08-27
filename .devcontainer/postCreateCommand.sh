@@ -4,3 +4,5 @@ echo "postCreateCommand.sh"
 echo "--------------------"
 
 sudo chmod +x .devcontainer/postStartCommand.sh
+
+rustup update stable
