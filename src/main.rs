@@ -33,18 +33,20 @@ async fn main() -> std::io::Result<()> {
         );
 
         log::info!(
-            "Git information; repository '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
-            app_settings.git_repository,
-            app_settings.git_branch,
-            app_settings.git_commit,
-            app_settings.git_tag,
+            "Git information; repository '{}', branch '{}', commit '{}', tag '{}'",
+            app_settings.git_repository.as_deref().unwrap_or("N/A"),
+            app_settings.git_branch.as_deref().unwrap_or("N/A"),
+            app_settings.git_commit.as_deref().unwrap_or("N/A"),
+            app_settings.git_tag.as_deref().unwrap_or("N/A"),
         );
 
+        let run_id = app_settings.github_run_id.map(|v| v.to_string());
+        let run_number = app_settings.github_run_number.map(|v| v.to_string());
         log::info!(
-            "GitHub information; workflow '{:?}', run id '{:?}', run number '{:?}'",
-            app_settings.github_workflow,
-            app_settings.github_run_id,
-            app_settings.github_run_number,
+            "GitHub information; workflow '{}', run id '{}', run number '{}'",
+            app_settings.github_workflow.as_deref().unwrap_or("N/A"),
+            run_id.as_deref().unwrap_or("N/A"),
+            run_number.as_deref().unwrap_or("N/A"),
         );
 
         tokio::time::sleep(Duration::from_millis(3_000)).await;
@@ -79,8 +81,9 @@ impl std::fmt::Display for AppSettings {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "git_repository='{:?}', git_branch='{:?}'",
-            self.git_repository, self.git_branch
+            "git_repository='{}', git_branch='{}'",
+            self.git_repository.as_deref().unwrap_or("N/A"),
+            self.git_branch.as_deref().unwrap_or("N/A"),
         )
     }
 }
