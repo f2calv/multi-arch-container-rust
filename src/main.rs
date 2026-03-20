@@ -7,7 +7,7 @@ use sys_info::*;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    // Set INFO logging level as default
+    // Set DEBUG logging level as default
     env_logger::Builder::from_env(Env::default().default_filter_or("debug")).init();
 
     //Load app settings from env variables

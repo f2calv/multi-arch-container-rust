@@ -1,13 +1,12 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/rust
+// https://github.com/devcontainers/images/tree/main/src/rust
 {
 	"name": "Rust",
 	"build": {
 		"dockerfile": "Dockerfile",
 		"args": {
-			// Use the VARIANT arg to pick a Debian OS version: buster, bullseye
-			// Use bullseye when on local on arm64/Apple Silicon.
-			"VARIANT": "bullseye"
+			// Use the VARIANT arg to pick a Debian OS version: bookworm, bullseye
+			"VARIANT": "bookworm"
 		}
 	},
 	"runArgs": [
@@ -40,7 +39,7 @@
 				"files.watcherExclude": {
 					"**/target/**": true
 				},
-				"rust-analyzer.checkOnSave.command": "clippy"
+				"rust-analyzer.check.command": "clippy"
 			},
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
