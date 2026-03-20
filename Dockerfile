@@ -10,15 +10,12 @@ if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
     echo 'TODO: need to complete and test building x86_64 FROM an arm platform??... ' ; \
     apt-get install -y g++-x86-64-linux-gnu libc6-dev-amd64-cross ; \
     rustup target add x86_64-unknown-linux-gnu ; \
-    rustup toolchain install stable-x86_64-unknown-linux-gnu ; \
 elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     apt-get install -y g++-aarch64-linux-gnu libc6-dev-arm64-cross ; \
     rustup target add aarch64-unknown-linux-gnu ; \
-    rustup toolchain install stable-aarch64-unknown-linux-gnu ; \
 elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     apt-get install -y g++-arm-linux-gnueabihf libc6-dev-armhf-cross ; \
     rustup target add armv7-unknown-linux-gnueabihf ; \
-    rustup toolchain install stable-armv7-unknown-linux-gnueabihf ; \
 fi
 
 
@@ -41,7 +38,7 @@ elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     TARGET=armv7-unknown-linux-gnueabihf ; \
     export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc ; \
-    export CC_armv7_unknown_Linux_gnueabihf=arm-linux-gnueabihf-gcc ; \
+    export CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc ; \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
 && cargo fetch --target $TARGET
@@ -69,7 +66,7 @@ elif [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 elif [ "$TARGETPLATFORM" = "linux/arm/v7" ]; then \
     TARGET=armv7-unknown-linux-gnueabihf ; \
     export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc ; \
-    export CC_armv7_unknown_Linux_gnueabihf=arm-linux-gnueabihf-gcc ; \
+    export CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc ; \
     export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++ ; \
 fi \
 && cargo build --release --target $TARGET && mv /app/target/$TARGET /app/target/final
@@ -95,4 +92,4 @@ ENV APP_GITHUB_RUN_ID=$GITHUB_RUN_ID
 ARG GITHUB_RUN_NUMBER
 ENV APP_GITHUB_RUN_NUMBER=$GITHUB_RUN_NUMBER
 
-ENTRYPOINT ["./multi-arch-container-rust"]
+ENTRYPOINT ["/multi-arch-container-rust"]

@@ -7,7 +7,7 @@ use sys_info::*;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    // Set INFO logging level as default
+    // Set DEBUG logging level as default
     env_logger::Builder::from_env(Env::default().default_filter_or("debug")).init();
 
     //Load app settings from env variables
@@ -33,18 +33,18 @@ async fn main() -> std::io::Result<()> {
         );
 
         log::info!(
-            "Git information; repository '{:?}', branch '{:?}', commit '{:?}', tag '{:?}'",
-            app_settings.git_repository,
-            app_settings.git_branch,
-            app_settings.git_commit,
-            app_settings.git_tag,
+            "Git information; repository '{}', branch '{}', commit '{}', tag '{}'",
+            DisplayOption(&app_settings.git_repository),
+            DisplayOption(&app_settings.git_branch),
+            DisplayOption(&app_settings.git_commit),
+            DisplayOption(&app_settings.git_tag),
         );
 
         log::info!(
-            "GitHub information; workflow '{:?}', run id '{:?}', run number '{:?}'",
-            app_settings.github_workflow,
-            app_settings.github_run_id,
-            app_settings.github_run_number,
+            "GitHub information; workflow '{}', run id '{}', run number '{}'",
+            DisplayOption(&app_settings.github_workflow),
+            DisplayOption(&app_settings.github_run_id),
+            DisplayOption(&app_settings.github_run_number),
         );
 
         tokio::time::sleep(Duration::from_millis(3_000)).await;
@@ -79,22 +79,26 @@ impl std::fmt::Display for AppSettings {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "git_repository='{:?}', git_branch='{:?}'",
-            self.git_repository, self.git_branch
+            "git_repository='{}', git_branch='{}'",
+            DisplayOption(&self.git_repository),
+            DisplayOption(&self.git_branch),
         )
     }
 }
 
-fn get_arch() -> String {
-    #[cfg(target_arch = "x86")]
-    let arch = String::from("x86");
-    #[cfg(target_arch = "x86_64")]
-    let arch = String::from("x86_64");
-    #[cfg(target_arch = "arm")]
-    let arch = String::from("arm");
-    #[cfg(target_arch = "aarch64")]
-    let arch = String::from("aarch64");
-    arch
+struct DisplayOption<'a, T>(&'a Option<T>);
+
+impl<T: std::fmt::Display> std::fmt::Display for DisplayOption<'_, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            Some(v) => v.fmt(f),
+            None => f.write_str("N/A"),
+        }
+    }
+}
+
+fn get_arch() -> &'static str {
+    std::env::consts::ARCH
 }
 
 fn get_app_name() -> String {
