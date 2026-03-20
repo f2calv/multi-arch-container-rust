@@ -97,16 +97,8 @@ impl<T: std::fmt::Display> std::fmt::Display for DisplayOption<'_, T> {
     }
 }
 
-fn get_arch() -> String {
-    #[cfg(target_arch = "x86")]
-    let arch = String::from("x86");
-    #[cfg(target_arch = "x86_64")]
-    let arch = String::from("x86_64");
-    #[cfg(target_arch = "arm")]
-    let arch = String::from("arm");
-    #[cfg(target_arch = "aarch64")]
-    let arch = String::from("aarch64");
-    arch
+fn get_arch() -> &'static str {
+    std::env::consts::ARCH
 }
 
 fn get_app_name() -> String {
