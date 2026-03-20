@@ -6,9 +6,6 @@ branches:
   feature:
     regex: ^features?[/-]
     tag: useBranchName
-  copilot:
-    regex: ^copilot[/-]
-    tag: 'copilot'
 ignore:
   sha: []
 merge-message-formats: {}
