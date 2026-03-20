@@ -50,11 +50,16 @@ jobs:
       contents: read #note: for private repos setting packages to write, will reset all other permissions to none (weird?)
     needs: [versioning, app, image]
     with:
-      registry: ghcr.io/${{ github.repository_owner }}
-      chart-repository-prefix: charts/
+      image-registry: ghcr.io
+      image-repository: ${{ github.repository_owner }}/multi-arch-container-rust
+      chart-registry: ghcr.io
+      chart-registry-username: ${{ github.repository_owner }}
+      chart-repository: ${{ github.repository_owner }}/charts/multi-arch-container-rust
+      chart-path: charts/multi-arch-container-rust
       tag: ${{ needs.versioning.outputs.semVer }}
       push-chart: ${{ github.ref_name == github.event.repository.default_branch }}
       chart-testing-cli-command: install
+    secrets: inherit
 
   release:
     needs: [versioning, app, image, chart]
