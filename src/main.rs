@@ -34,19 +34,17 @@ async fn main() -> std::io::Result<()> {
 
         log::info!(
             "Git information; repository '{}', branch '{}', commit '{}', tag '{}'",
-            app_settings.git_repository.as_deref().unwrap_or("N/A"),
-            app_settings.git_branch.as_deref().unwrap_or("N/A"),
-            app_settings.git_commit.as_deref().unwrap_or("N/A"),
-            app_settings.git_tag.as_deref().unwrap_or("N/A"),
+            DisplayOption(&app_settings.git_repository),
+            DisplayOption(&app_settings.git_branch),
+            DisplayOption(&app_settings.git_commit),
+            DisplayOption(&app_settings.git_tag),
         );
 
-        let run_id = app_settings.github_run_id.map(|v| v.to_string());
-        let run_number = app_settings.github_run_number.map(|v| v.to_string());
         log::info!(
             "GitHub information; workflow '{}', run id '{}', run number '{}'",
-            app_settings.github_workflow.as_deref().unwrap_or("N/A"),
-            run_id.as_deref().unwrap_or("N/A"),
-            run_number.as_deref().unwrap_or("N/A"),
+            DisplayOption(&app_settings.github_workflow),
+            DisplayOption(&app_settings.github_run_id),
+            DisplayOption(&app_settings.github_run_number),
         );
 
         tokio::time::sleep(Duration::from_millis(3_000)).await;
@@ -82,9 +80,20 @@ impl std::fmt::Display for AppSettings {
         write!(
             f,
             "git_repository='{}', git_branch='{}'",
-            self.git_repository.as_deref().unwrap_or("N/A"),
-            self.git_branch.as_deref().unwrap_or("N/A"),
+            DisplayOption(&self.git_repository),
+            DisplayOption(&self.git_branch),
         )
+    }
+}
+
+struct DisplayOption<'a, T>(&'a Option<T>);
+
+impl<T: std::fmt::Display> std::fmt::Display for DisplayOption<'_, T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            Some(v) => v.fmt(f),
+            None => f.write_str("N/A"),
+        }
     }
 }
 
