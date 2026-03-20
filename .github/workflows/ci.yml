@@ -56,6 +56,7 @@ jobs:
       chart-registry-username: ${{ github.repository_owner }}
       chart-repository: ${{ github.repository_owner }}/charts/multi-arch-container-rust
       chart-path: charts/multi-arch-container-rust
+      chart-testing-cli-version: v3.11.0
       tag: ${{ needs.versioning.outputs.semVer }}
       push-chart: ${{ github.ref_name == github.event.repository.default_branch }}
     secrets: inherit
