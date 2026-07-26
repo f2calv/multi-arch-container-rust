@@ -1,0 +1,31 @@
+exclude: |
+  (?x)^(
+    .editorconfig|
+    .devcontainer/devcontainer.json
+  )$
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  - id: check-xml
+  - id: check-yaml
+    args: [--allow-multiple-documents]
+  #- id: check-json #Note: now we are using check-json5
+  #- id: pretty-format-json
+  #  args: ["--indent", "2", "--autofix", "--no-sort-keys"]
+  - id: check-added-large-files
+    args: [--maxkb=100]
+  - id: check-merge-conflict
+  - id: mixed-line-ending
+    args: [--fix=lf]
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+- repo: https://gitlab.com/bmares/check-json5
+  rev: v1.0.0
+  hooks:
+  - id: check-json5
+- repo: https://github.com/igorshubovych/markdownlint-cli
+  rev: v0.45.0
+  hooks:
+  - id: markdownlint
+    args: ["--disable", "MD013", "--disable", "MD034", "--"]

@@ -1,6 +1,9 @@
-# first ignore everything
+# Deny everything, then explicitly allow only what the build needs. Keeping the
+# build context minimal speeds up `docker build` and stops unrelated file edits
+# (docs, charts, IDE state, .git) from invalidating cached layers.
 *
-# explictly add exceptions for required files/paths
-!src/**
+
 !Cargo.toml
 !Cargo.lock
+!appsettings.json
+!src/**
