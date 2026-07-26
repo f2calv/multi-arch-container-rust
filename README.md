@@ -219,23 +219,23 @@ flowchart LR
 
 - I highly recommend reading the official Docker blog posts about multi-arch images;
 
-  - <https://www.docker.com/blog/multi-arch-images/>
-  - <https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/>
-  - <https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/>
-  - <https://www.docker.com/blog/cross-compiling-rust-code-for-multiple-architectures/>
+  - https://www.docker.com/blog/multi-arch-images/
+  - https://www.docker.com/blog/multi-arch-build-and-images-the-simple-way/
+  - https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/
+  - https://www.docker.com/blog/cross-compiling-rust-code-for-multiple-architectures/
 
 - Official Docker documentation about support/implementation for multi-arch images;
 
-  - <https://docs.docker.com/build/building/multi-platform/>
-  - <https://docs.docker.com/build/builders/>
-  - <https://docs.docker.com/reference/cli/docker/buildx/build/>
-  - <https://docs.docker.com/build/cache/optimize/>
+  - https://docs.docker.com/build/building/multi-platform/
+  - https://docs.docker.com/build/builders/
+  - https://docs.docker.com/reference/cli/docker/buildx/build/
+  - https://docs.docker.com/build/cache/optimize/
 
 - Official Rust documentation useful for multi-arch builds;
 
-  - <https://rust-lang.github.io/rustup/cross-compilation.html>
-  - <https://doc.rust-lang.org/nightly/rustc/platform-support.html>
-  - <https://doc.rust-lang.org/cargo/reference/config.html#target>
+  - https://rust-lang.github.io/rustup/cross-compilation.html
+  - https://doc.rust-lang.org/nightly/rustc/platform-support.html
+  - https://doc.rust-lang.org/cargo/reference/config.html#target
 
 ## Further Resources
 
