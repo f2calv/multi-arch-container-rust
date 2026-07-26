@@ -6,12 +6,7 @@ echo "-------------------"
 sudo apt-get update
 sudo apt-get upgrade -y
 
-rustup --version
 rustc --version
-
-# alias cls="clear"
-# alias cc="cargo check"
-# alias cb="cargo build"
-# alias cr="cargo run"
+kubectl version --client --output=yaml | head -2
 
 echo "Done"

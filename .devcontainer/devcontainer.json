@@ -1,66 +1,64 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/devcontainers/images/tree/main/src/rust
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/rust
+//
+// Note: the sibling multi-arch-container-dotnet repository deliberately has NO
+// devcontainer - the .NET SDK is installed natively on the developer machine.
 {
-	"name": "Rust",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {
-			// Use the VARIANT arg to pick a Debian OS version: bookworm, bullseye
-			"VARIANT": "bookworm"
-		}
-	},
-	"runArgs": [
-		"--cap-add=SYS_PTRACE",
-		"--security-opt",
-		"seccomp=unconfined"
-	],
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	"features": {
-		"ghcr.io/devcontainers/features/powershell:2": {},
-		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
-		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-			"version": "latest",
-			"helm": "3.9.2",
-			"minikube": "none"
-		},
-		"ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {
-			"jqVersion": "latest",
-			"yqVersion": "latest"
-		}
-	},
-	// Configure tool-specific properties.
-	"customizations": {
-		// Configure properties specific to VS Code.
-		"vscode": {
-			// Set *default* container specific settings.json values on container create.
-			"settings": {
-				"lldb.executable": "/usr/bin/lldb",
-				// VS Code don't watch files under ./target
-				"files.watcherExclude": {
-					"**/target/**": true
-				},
-				"rust-analyzer.check.command": "clippy"
-			},
-			// Add the IDs of extensions you want installed when the container is created.
-			"extensions": [
-				"vadimcn.vscode-lldb",
-				"rust-lang.rust-analyzer",
-				"tamasfe.even-better-toml",
-				"serayuzgur.crates",
-				"ms-azuretools.vscode-docker",
-				"ms-vscode-remote.vscode-remote-extensionpack",
-				"mutantdino.resourcemonitor",
-				"usernamehw.errorlens",
-				"eamodio.gitlens"
-			]
-		}
-	},
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "rustc --version",
-	"postCreateCommand": "sh . ./.devcontainer/postCreateCommand.sh",
-	"postStartCommand": "sh . ./.devcontainer/postStartCommand.sh",
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+    "name": "Rust",
+    "image": "mcr.microsoft.com/devcontainers/rust:1-bookworm",
+    "runArgs": [
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined"
+    ],
+    // Features to add to the dev container. More info: https://containers.dev/features.
+    "features": {
+        "ghcr.io/devcontainers-extra/features/pre-commit:2": {},
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
+            "version": "latest",
+            "helm": "none",
+            "minikube": "none"
+        },
+        "ghcr.io/eitsupi/devcontainer-features/jq-likes:2": {
+            "jqVersion": "latest",
+            "yqVersion": "latest"
+        }
+    },
+    "postCreateCommand": "sh . ./.devcontainer/postCreateCommand.sh",
+    "postStartCommand": "sh . ./.devcontainer/postStartCommand.sh",
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "lldb.executable": "/usr/bin/lldb",
+                // VS Code doesn't need to watch files under ./target
+                "files.watcherExclude": {
+                    "**/target/**": true
+                },
+                "rust-analyzer.check.command": "clippy"
+            },
+            "extensions": [
+                // Common to every multi-arch-container-* repository
+                "editorconfig.editorconfig",
+                "ms-azuretools.vscode-containers",
+                "ms-vscode-remote.vscode-remote-extensionpack",
+                "davidanson.vscode-markdownlint",
+                "redhat.vscode-yaml",
+                "usernamehw.errorlens",
+                "eamodio.gitlens",
+                "mutantdino.resourcemonitor",
+                // Language specific
+                "rust-lang.rust-analyzer",
+                "vadimcn.vscode-lldb",
+                "tamasfe.even-better-toml",
+                "fill-labs.dependi"
+            ]
+        }
+    },
+    "mounts": [
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/source/github,target=/workspaces,type=bind,consistency=cached",
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/home/vscode/.kube,type=bind"
+    ]
+    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+    // "remoteUser": "root"
 }
