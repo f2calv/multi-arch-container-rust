@@ -27,7 +27,12 @@ pub enum LogFormat {
 ///
 /// Note: keys are snake_case because the `config` crate lower-cases environment keys but preserves
 /// file keys verbatim - snake_case is the only casing where both sources resolve to the same key.
+///
+/// `#[serde(default)]` is applied at container level so that an `appsettings.json` supplying only
+/// *some* of the keys still deserialises, with the remainder falling back to [`AppConfig::default`]
+/// - matching the per-property defaults of the sibling .NET and Go repositories.
 #[derive(Debug, Clone, Deserialize)]
+#[serde(default)]
 pub struct AppConfig {
     /// Message written on every iteration of the worker loop.
     pub greeting: String,
@@ -103,4 +108,55 @@ pub fn load() -> Result<Settings, ConfigError> {
         .add_source(Environment::default().separator("__"))
         .build()?
         .try_deserialize()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Mirrors `TestDefaultSettingsArePopulated` in the sibling Go repository.
+    #[test]
+    fn defaults_are_populated() {
+        let app = AppConfig::default();
+
+        assert_eq!(app.interval_seconds, 3);
+        assert_eq!(app.log_format, LogFormat::Text);
+        assert!(!app.greeting.is_empty());
+    }
+
+    /// An `appsettings.json` supplying only some keys must still deserialise, with the remainder
+    /// falling back to the defaults - the behaviour of the sibling .NET and Go repositories.
+    #[test]
+    fn partial_configuration_falls_back_to_defaults() {
+        let settings: Settings = Config::builder()
+            .add_source(File::from_str(
+                r#"{ "app": { "greeting": "hello from a test" } }"#,
+                FileFormat::Json,
+            ))
+            .build()
+            .expect("configuration should build")
+            .try_deserialize()
+            .expect("configuration should deserialise");
+
+        assert_eq!(settings.app.greeting, "hello from a test");
+        assert_eq!(settings.app.interval_seconds, 3);
+        assert_eq!(settings.app.log_format, LogFormat::Text);
+        assert_eq!(settings.git_tag, UNKNOWN);
+    }
+
+    /// `log_format` is matched case-insensitively against the lower-cased enum variants.
+    #[test]
+    fn log_format_deserialises_from_json_value() {
+        let settings: Settings = Config::builder()
+            .add_source(File::from_str(
+                r#"{ "app": { "log_format": "json" } }"#,
+                FileFormat::Json,
+            ))
+            .build()
+            .expect("configuration should build")
+            .try_deserialize()
+            .expect("configuration should deserialise");
+
+        assert_eq!(settings.app.log_format, LogFormat::Json);
+    }
 }

@@ -28,8 +28,7 @@ pub async fn run(settings: &Settings, mut shutdown: Receiver<bool>) {
         info!(
             app_name = %app_name(),
             process_architecture = std::env::consts::ARCH,
-            os_type = %sys_info::os_type().unwrap_or_else(|_| "unknown".to_owned()),
-            os_release = %sys_info::os_release().unwrap_or_else(|_| "unknown".to_owned()),
+            os_description = std::env::consts::OS,
             "{}",
             app.greeting
         );
