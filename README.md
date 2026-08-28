@@ -146,11 +146,46 @@ docker run --pull always --rm -it -e APP__GREETING="hello world" -e APP__INTERVA
 
 #Inspect the multi-architecture manifest list
 docker buildx imagetools inspect ghcr.io/f2calv/multi-arch-container-rust
+```
 
-#Run pre-built image on Kubernetes (via kubectl)
-kubectl run -i --tty --attach multi-arch-container-rust --image=ghcr.io/f2calv/multi-arch-container-rust --image-pull-policy='Always'
-kubectl logs -f multi-arch-container-rust
-#kubectl delete po multi-arch-container-rust
+## Run on Kubernetes with Helm
+
+Create `multi-arch-container-rust.values.yaml` with the pinned image and worker configuration:
+
+```yaml
+kind: Deployment
+replicaCount: 1
+
+fullnameOverride: multi-arch-container-rust
+
+image:
+  repository: ghcr.io/f2calv/multi-arch-container-rust
+  tag: 1.2.1
+  pullPolicy: IfNotPresent
+
+service:
+  enabled: false
+
+startupProbe: false
+readinessProbe: false
+livenessProbe: false
+
+envVars:
+  APP__GREETING: Hello from Rust on Kubernetes
+  APP__INTERVAL_SECONDS: "5"
+  APP__LOG_FORMAT: json
+  RUST_LOG: debug
+```
+
+Install or upgrade the Deployment with version `1.0.0` of the shared `workload` chart:
+
+```bash
+helm upgrade --install multi-arch-container-rust oci://ghcr.io/f2calv/charts/workload \
+  --version 1.0.0 \
+  --values multi-arch-container-rust.values.yaml
+
+kubectl logs --follow deployment/multi-arch-container-rust
+helm uninstall multi-arch-container-rust
 ```
 
 ## Self-Build Container Image Locally
