@@ -27,6 +27,7 @@ applyTo: '**/*.rs'
 - **`main` returns `Result<(), Box<dyn Error>>`** so startup failures surface as a non-zero exit code and a printed error rather than a panic backtrace.
 - **Library-style modules define their own error type** (`thiserror::Error` when a dependency is acceptable); binaries may use `Box<dyn Error>` or `anyhow::Result` at the boundary.
 - **Add context when propagating.** A bare `?` that loses the file name or key being processed makes production failures unreadable - wrap with `map_err` or `anyhow::Context`.
+- **Keep error context non-sensitive.** Name the failed operation and safe identifier, but never include credentials, tokens, connection strings, full local paths or personally identifying values.
 - **Panics are for programmer errors only** (violated invariants), never for bad input, missing configuration or I/O failure.
 
 ## Logging & Instrumentation
@@ -39,6 +40,8 @@ applyTo: '**/*.rs'
 - **`#[instrument]` on meaningful units of work** (request handlers, long-running tasks) - not on trivial getters, where the span overhead outweighs the value.
 - **Subscriber setup lives in one place** (`telemetry.rs`) and is installed exactly once from `main`. Application code never touches `tracing_subscriber`.
 - **Verbosity via `RUST_LOG`**, parsed with `EnvFilter`, defaulting to `info`.
+- **Never record secrets or personal data.** Credentials, tokens, connection strings, full local paths and personally identifying values must never become event fields or span attributes.
+- **Keep hot-path fields cheap.** Avoid expensive `Debug` formatting or allocating temporary strings solely for events that may be filtered out.
 
 ## Configuration
 
@@ -54,6 +57,7 @@ applyTo: '**/*.rs'
 - **Tokio is the runtime.** Enable only the features actually used (`macros`, `rt-multi-thread`, `sync`, `time`) rather than `full` - it materially affects compile time and binary size.
 - **Never block the async runtime.** Use `tokio::time::sleep`, not `std::thread::sleep`; move CPU-bound work to `spawn_blocking`.
 - **Cancellation is explicit.** Long-running loops select over their work and a shutdown signal (`tokio::select!` with a `watch` receiver or `CancellationToken`) so SIGINT/SIGTERM stop them promptly.
+- **Every spawned task has an owner and exit path.** Propagate cancellation, retain its `JoinHandle` when completion matters, and await owned tasks during graceful shutdown.
 - **Do not hold a `std::sync::Mutex` guard across an `.await`.** Use `tokio::sync::Mutex` when a lock must span a suspension point, and prefer message passing over shared mutable state.
 
 ## Testing
@@ -63,6 +67,8 @@ applyTo: '**/*.rs'
 - **Arrange/Act/Assert**, separated by blank lines. One behaviour per test.
 - **Assertion messages carry the actual value**: `assert_eq!(got, want, "greeting = {got}")`.
 - **No shared mutable state between tests** - they run in parallel by default and must be independently repeatable.
+- **Test stable module behaviour**, not incidental implementation details, unless a private helper contains genuinely complex logic.
+- **Use synthetic credentials and identifiers.** Failure output and CI artifacts must not expose real secrets or personal data.
 
 ## Documentation
 
