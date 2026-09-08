@@ -1,9 +1,10 @@
 //! Multi-architecture container demonstrator.
 //!
-//! A trivial worker process, implemented identically in three languages:
+//! A trivial worker process, implemented identically in four languages:
 //!   - <https://github.com/f2calv/multi-arch-container-dotnet>
 //!   - <https://github.com/f2calv/multi-arch-container-go>
 //!   - <https://github.com/f2calv/multi-arch-container-rust> (this one)
+//!   - <https://github.com/f2calv/multi-arch-container-python>
 
 mod config;
 mod telemetry;

@@ -1,8 +1,5 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/rust
-//
-// Note: the sibling multi-arch-container-dotnet repository deliberately has NO
-// devcontainer - the .NET SDK is installed natively on the developer machine.
 {
   "name": "Rust",
   "image": "mcr.microsoft.com/devcontainers/rust:1-bookworm",

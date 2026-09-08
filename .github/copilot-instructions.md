@@ -70,11 +70,12 @@ This repository is a Rust application that demonstrates how to build multi-archi
 
 ### Sibling Repositories (alignment is a hard requirement)
 
-Three repositories implement the *same* trivial worker application in three languages:
+Four repositories implement the *same* trivial worker application in four languages:
 
 - [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet)
 - [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go)
 - [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust) (this one)
+- [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python)
 
 Their premise is that a developer fluent in one language can learn another language's containerisation story by diffing two repositories. **Any change made here must be considered for the other two.** Keep the following as close to identical as possible:
 
