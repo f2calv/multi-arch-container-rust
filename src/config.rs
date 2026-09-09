@@ -112,46 +112,26 @@ fn unknown() -> String {
     UNKNOWN.to_owned()
 }
 
-/// Build configuration from optional base and environment-specific JSON files, then the
-/// environment, with later sources taking precedence.
+/// Build the configuration from `appsettings.json` (optional) then the environment, with the
+/// environment taking precedence - the same layering order as the sibling repositories.
+///
+/// The sibling .NET repository layers one extra source, an optional
+/// `appsettings.{DOTNET_ENVIRONMENT}.json`, because `Host.CreateApplicationBuilder` provides it
+/// for free. It is deliberately not reimplemented here.
 ///
 /// Note: `try_parsing` is deliberately left OFF. It coerces every environment value that *looks*
 /// numeric into an integer, which mangles values that only happen to be digits - an all-numeric
 /// `GIT_COMMIT` SHA would be logged as `0`. Values stay as strings and serde converts them to the
 /// declared field type on deserialisation instead.
 pub fn load() -> Result<Settings, ConfigError> {
-    let environment = std::env::var("APP_ENVIRONMENT").ok();
-    let mut builder =
-        Config::builder().add_source(File::new("appsettings", FileFormat::Json).required(false));
-
-    if let Some(file_name) = environment_file_name(environment.as_deref())? {
-        builder = builder.add_source(File::new(&file_name, FileFormat::Json).required(false));
-    }
-
-    let settings: Settings = builder
+    let settings: Settings = Config::builder()
+        .add_source(File::new("appsettings", FileFormat::Json).required(false))
         .add_source(Environment::default().separator("__"))
         .build()?
         .try_deserialize()?;
     settings.app.validate()?;
 
     Ok(settings)
-}
-
-fn environment_file_name(environment: Option<&str>) -> Result<Option<String>, ConfigError> {
-    let Some(environment) = environment.filter(|value| !value.is_empty()) else {
-        return Ok(None);
-    };
-
-    if !environment
-        .chars()
-        .all(|character| character.is_ascii_alphanumeric() || matches!(character, '-' | '_'))
-    {
-        return Err(ConfigError::Message(
-            "APP_ENVIRONMENT contains an invalid character".to_owned(),
-        ));
-    }
-
-    Ok(Some(format!("appsettings.{environment}")))
 }
 
 #[cfg(test)]
@@ -202,22 +182,6 @@ mod tests {
             .expect("configuration should deserialise");
 
         assert_eq!(settings.app.log_format, LogFormat::Json);
-    }
-
-    #[test]
-    fn environment_file_name_accepts_safe_names() {
-        let file_name =
-            environment_file_name(Some("Development_2")).expect("environment name should be valid");
-
-        assert_eq!(file_name.as_deref(), Some("appsettings.Development_2"));
-    }
-
-    #[test]
-    fn environment_file_name_rejects_path_characters() {
-        let error = environment_file_name(Some("../Development"))
-            .expect_err("path characters should be rejected");
-
-        assert!(error.to_string().contains("invalid character"));
     }
 
     #[test]

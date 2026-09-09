@@ -126,10 +126,9 @@ Configuration is layered by the [`config`](https://docs.rs/config) crate, in asc
 
 1. Struct defaults from `impl Default for AppConfig`.
 2. [`appsettings.json`](appsettings.json) - optional, so the binary runs unchanged outside a container.
-3. An optional `appsettings.${APP_ENVIRONMENT}.json` file.
-4. Environment variables.
+3. Environment variables.
 
-`APP_ENVIRONMENT` accepts letters, numbers, hyphens and underscores. When it is unset, only the base file is loaded. Production values therefore remain in `appsettings.json` without a separate `appsettings.Production.json`.
+The sibling .NET repository layers one extra source, an optional `appsettings.${DOTNET_ENVIRONMENT}.json`, because `Host.CreateApplicationBuilder` provides it for free. It is deliberately not reimplemented here - hand-rolling file resolution and merge semantics to match a built-in is not a trade worth making in a reference repository.
 
 Values are deserialised into a typed `Settings` struct with `serde`, so a malformed value aborts startup with a clear message rather than surfacing later.
 
