@@ -106,6 +106,20 @@ Set `APP__LOG_FORMAT=json` to emit newline-delimited JSON instead of human-reada
 docker run --rm -e APP__LOG_FORMAT=json ghcr.io/f2calv/multi-arch-container-rust
 ```
 
+### OpenTelemetry
+
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to enable batched logs, metrics and traces over OTLP/HTTP with Protocol Buffers. Console logging remains enabled in the selected text or JSON format. The worker emits a `worker.iteration` span and increments the `worker.iterations` counter on every cycle.
+
+```bash
+docker run --rm \
+  -e OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 \
+  -e OTEL_SERVICE_NAME=multi-arch-container-rust \
+  -e OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=development \
+  ghcr.io/f2calv/multi-arch-container-rust
+```
+
+The exporters honor signal-specific `OTEL_EXPORTER_OTLP_*` variables for endpoints, headers, compression, certificates and timeouts. When the base endpoint is absent, no OpenTelemetry provider or exporter is initialized.
+
 ## Configuration
 
 Configuration is layered by the [`config`](https://docs.rs/config) crate, in ascending order of precedence:

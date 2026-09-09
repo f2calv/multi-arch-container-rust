@@ -15,13 +15,13 @@ use std::error::Error;
 use tokio::sync::watch;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     // 1) Configuration: base JSON -> environment-specific JSON -> environment variables.
     let settings = config::load()?;
 
     // 2) Structured logging. Application code only ever calls the `tracing` macros, so the
     //    subscriber (text vs JSON, filtering, exporters) can be swapped without touching it.
-    telemetry::init(&settings.app);
+    let telemetry = telemetry::init(&settings)?;
 
     // 3) Shutdown signalling. `ctrlc` traps SIGINT and, with the `termination` feature, the
     //    SIGTERM that `docker stop` and `kubectl delete pod` send. The handler runs on its own
@@ -35,6 +35,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // 4) The worker itself.
     worker::run(&settings, rx).await;
+
+    if let Some(telemetry) = telemetry {
+        tokio::task::spawn_blocking(move || telemetry.shutdown()).await??;
+    }
 
     Ok(())
 }
