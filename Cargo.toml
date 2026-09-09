@@ -8,11 +8,11 @@ edition = "2021"
 
 [dependencies]
 # Layered configuration (file -> environment), the Rust analogue of Microsoft.Extensions.Configuration.
-config = "0"
+config = { version = "0.15", default-features = false, features = ["json"] }
 serde = { version = "1", features = ["derive"] }
 # Structured, levelled logging - the Rust analogue of Serilog.
-tracing = "0"
-tracing-subscriber = { version = "0", features = ["env-filter", "json"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 # Note: the 'termination' feature also traps SIGTERM, which is what Docker/Kubernetes send on shutdown.
 ctrlc = { version = "3", features = ["termination"] }
 tokio = { version = "1", features = [
