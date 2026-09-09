@@ -16,7 +16,7 @@ use tokio::sync::watch;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    // 1) Configuration: appsettings.json -> environment variables (environment wins).
+    // 1) Configuration: base JSON -> environment-specific JSON -> environment variables.
     let settings = config::load()?;
 
     // 2) Structured logging. Application code only ever calls the `tracing` macros, so the
