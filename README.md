@@ -14,17 +14,18 @@ Although I could achieve my goal of deploying the same application to multiple a
 
 ## Sibling Repositories
 
-The same trivial worker application is implemented three times, once per language. The repository layout, file names, CI workflow and even the Dockerfile comments are kept as close to identical as possible - so a developer fluent in one language can learn another language's containerisation story simply by diffing two repositories.
+The same trivial worker application is implemented four times, once per language. The repository layout, file names, CI workflow and even the Dockerfile comments are kept as close to identical as possible - so a developer fluent in one language can learn another language's containerisation story simply by diffing two repositories.
 
 | Repository | Language | Build image | Final image | Cross-compilation mechanism |
 | --- | --- | --- | --- | --- |
 | [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 10 | `mcr.microsoft.com/dotnet/sdk:10.0` | `mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled` | `dotnet publish -r <RID>` |
 | [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go) | Go | `golang:1-bookworm` | `gcr.io/distroless/static-debian12:nonroot` | `GOOS` / `GOARCH` / `GOARM` |
 | [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust) | Rust | `rust:1-bookworm` | `gcr.io/distroless/cc-debian12:nonroot` | `rustup target` + GNU cross linker |
+| [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python) | Python 3.14 | `python:3.14-slim-bookworm` | `python:3.14-slim-bookworm` | Architecture-neutral wheel + target-native runtime |
 
-Rust is the most involved of the three: it is the only one that needs a real cross linker installed, because the compiled binary links natively against the target's glibc.
+Rust is the most involved compiled implementation: it needs a real cross linker because the binary links natively against the target's glibc.
 
-These repositories are **application code only** - Kubernetes packaging lives in the standalone [f2calv/helm-charts](https://github.com/f2calv/helm-charts) repository, which provides a single multi-purpose chart used by all three.
+These repositories are **application code only** - Kubernetes packaging lives in the standalone [f2calv/helm-charts](https://github.com/f2calv/helm-charts) repository, which provides a single multi-purpose chart used by all four.
 
 ## Goals
 
@@ -51,7 +52,7 @@ The mapping is resolved exactly once and written to `/etc/rust-target.env`, whic
 
 ## Anatomy of the Dockerfile
 
-All three sibling repositories share the same two-stage shape:
+All four sibling repositories share the same two-stage shape:
 
 ```mermaid
 flowchart LR
@@ -93,17 +94,31 @@ info!(
 
 The equivalent in the sibling repositories:
 
-| | .NET | Go | Rust |
-| --- | --- | --- | --- |
-| Library | Serilog (behind `ILogger<T>`) | `log/slog` (standard library) | `tracing` + `tracing-subscriber` |
-| Text/JSON switch | `app:log_format` | `app.log_format` | `app.log_format` |
-| Verbosity | `Serilog:MinimumLevel` in `appsettings.json` | `LOG_LEVEL` env var | `RUST_LOG` env var |
+| | .NET | Go | Rust | Python |
+| --- | --- | --- | --- | --- |
+| Library | Serilog (behind `ILogger<T>`) | `log/slog` (standard library) | `tracing` + `tracing-subscriber` | `logging` (standard library) |
+| Text/JSON switch | `app:log_format` | `app.log_format` | `app.log_format` | `app.log_format` |
+| Verbosity | `Serilog:MinimumLevel` in `appsettings.json` | `LOG_LEVEL` env var | `RUST_LOG` env var | `LOG_LEVEL` env var |
 
 Set `APP__LOG_FORMAT=json` to emit newline-delimited JSON instead of human-readable console output:
 
 ```bash
 docker run --rm -e APP__LOG_FORMAT=json ghcr.io/f2calv/multi-arch-container-rust
 ```
+
+### OpenTelemetry
+
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to enable batched logs, metrics and traces over OTLP/HTTP with Protocol Buffers. Console logging remains enabled in the selected text or JSON format. The worker emits a `worker.iteration` span and increments the `worker.iterations` counter on every cycle.
+
+```bash
+docker run --rm \
+  -e OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 \
+  -e OTEL_SERVICE_NAME=multi-arch-container-rust \
+  -e OTEL_RESOURCE_ATTRIBUTES=deployment.environment.name=development \
+  ghcr.io/f2calv/multi-arch-container-rust
+```
+
+The exporters honor signal-specific `OTEL_EXPORTER_OTLP_*` variables for endpoints, headers, compression, certificates and timeouts. When the base endpoint is absent, no OpenTelemetry provider or exporter is initialized.
 
 ## Configuration
 
@@ -113,17 +128,19 @@ Configuration is layered by the [`config`](https://docs.rs/config) crate, in asc
 2. [`appsettings.json`](appsettings.json) - optional, so the binary runs unchanged outside a container.
 3. Environment variables.
 
+The sibling .NET repository layers one extra source, an optional `appsettings.${DOTNET_ENVIRONMENT}.json`, because `Host.CreateApplicationBuilder` provides it for free. It is deliberately not reimplemented here - hand-rolling file resolution and merge semantics to match a built-in is not a trade worth making in a reference repository.
+
 Values are deserialised into a typed `Settings` struct with `serde`, so a malformed value aborts startup with a clear message rather than surfacing later.
 
 | Key | Environment variable | Default | Description |
 | --- | --- | --- | --- |
 | `app.greeting` | `APP__GREETING` | `Hello from a multi-architecture container` | Message logged each iteration |
-| `app.interval_seconds` | `APP__INTERVAL_SECONDS` | `3` | Delay between iterations |
+| `app.interval_seconds` | `APP__INTERVAL_SECONDS` | `3` | Delay between iterations, from 1 to 3600 seconds |
 | `app.log_format` | `APP__LOG_FORMAT` | `text` | `text` or `json` |
 
-Keys are **snake_case** in both the file and the environment. The `config` crate lower-cases environment keys but preserves file keys verbatim, so snake_case is the only casing where both sources resolve to the same key - and it is what the sibling .NET and Go repositories use.
+Keys are **snake_case** in both the file and the environment. The `config` crate lower-cases environment keys but preserves file keys verbatim, so snake_case is the only casing where both sources resolve to the same key - and it is what the sibling .NET, Go and Python repositories use.
 
-Build provenance is a second, flat set of variables baked into the image by the `ARG`/`ENV` block of the [Dockerfile](Dockerfile) (populated by CI, or by `build.sh`/`build.ps1` locally). The same names are used by all three sibling repositories.
+Build provenance is a second, flat set of variables baked into the image by the `ARG`/`ENV` block of the [Dockerfile](Dockerfile) (populated by CI, or by `build.sh`/`build.ps1` locally). The same names are used by all four sibling repositories.
 
 | Environment Variable | Description |
 | --- | --- |
@@ -146,11 +163,48 @@ docker run --pull always --rm -it -e APP__GREETING="hello world" -e APP__INTERVA
 
 #Inspect the multi-architecture manifest list
 docker buildx imagetools inspect ghcr.io/f2calv/multi-arch-container-rust
+```
 
-#Run pre-built image on Kubernetes (via kubectl)
-kubectl run -i --tty --attach multi-arch-container-rust --image=ghcr.io/f2calv/multi-arch-container-rust --image-pull-policy='Always'
-kubectl logs -f multi-arch-container-rust
-#kubectl delete po multi-arch-container-rust
+## Run on Kubernetes with Helm
+
+The public [universal `workload` chart](https://github.com/f2calv/helm-charts/tree/main/charts/workload) deploys this Rust worker through the same framework-neutral values used for .NET, Go, and other containerised runtimes. Sensible defaults keep the worker configuration small while retaining opt-in access to scheduling, networking, storage, autoscaling, and disruption controls.
+
+Create `multi-arch-container-rust.values.yaml` with the pinned image and worker configuration:
+
+```yaml
+kind: Deployment
+replicaCount: 1
+
+fullnameOverride: multi-arch-container-rust
+
+image:
+  repository: ghcr.io/f2calv/multi-arch-container-rust
+  tag: 1.2.1
+  pullPolicy: IfNotPresent
+
+service:
+  enabled: false
+
+startupProbe: false
+readinessProbe: false
+livenessProbe: false
+
+envVars:
+  APP__GREETING: Hello from Rust on Kubernetes
+  APP__INTERVAL_SECONDS: "5"
+  APP__LOG_FORMAT: json
+  RUST_LOG: debug
+```
+
+Install or upgrade the Deployment with version `1.0.2` of the universal `workload` chart:
+
+```bash
+helm upgrade --install multi-arch-container-rust oci://ghcr.io/f2calv/charts/workload \
+  --version 1.0.2 \
+  --values multi-arch-container-rust.values.yaml
+
+kubectl logs --follow deployment/multi-arch-container-rust
+helm uninstall multi-arch-container-rust
 ```
 
 ## Self-Build Container Image Locally
@@ -171,12 +225,12 @@ Or
 ./build.sh
 ```
 
-Both scripts are byte-identical across the three sibling repositories - every value they need is derived from git rather than hard-coded. They emulate the `image` job of [ci.yml](.github/workflows/ci.yml).
+Both scripts are byte-identical across the four sibling repositories - every value they need is derived from git rather than hard-coded. They emulate the `image` job of [ci.yml](.github/workflows/ci.yml).
 
-A multi-platform image cannot be loaded into the local docker image store, so by default the scripts build a single platform (`linux/amd64`) with `--load`. To exercise all three architectures, push instead of loading:
+A multi-platform image cannot be loaded into the local Docker image store, so by default the scripts build a single platform (`linux/amd64`) with `--load`. To exercise all three architectures locally, export an OCI archive instead:
 
 ```bash
-PLATFORM=linux/amd64,linux/arm64,linux/arm/v7 OUTPUT=--push ./build.sh
+PLATFORM=linux/amd64,linux/arm64,linux/arm/v7 OUTPUT=--output=type=oci,dest=multi-arch-container.tar ./build.sh
 ```
 
 ## Build & Test Commands
@@ -197,9 +251,9 @@ rustup target add armv7-unknown-linux-gnueabihf
 cargo build --release --target armv7-unknown-linux-gnueabihf
 ```
 
-## Run All Three Side By Side
+## Run All Four Side By Side
 
-A [docker-compose.yml](https://github.com/f2calv/multi-arch-container-dotnet/blob/main/docker-compose.yml) in the sibling **.NET** repository builds and runs all three images together, which is the quickest way to confirm that configuration, environment variables and log output behave identically across the languages. Clone the three repositories alongside each other and run `docker compose up --build` from the .NET repository.
+A [docker-compose.yml](https://github.com/f2calv/multi-arch-container-dotnet/blob/main/docker-compose.yml) in the sibling **.NET** repository builds and runs all four images together, which is the quickest way to confirm that configuration, environment variables and log output behave identically across the languages. Clone the four repositories alongside each other and run `docker compose up --build` from the .NET repository.
 
 ## Deployment Flow
 
@@ -241,4 +295,5 @@ flowchart LR
 
 - [Click here for the .NET version of this repository...](https://github.com/f2calv/multi-arch-container-dotnet)
 - [Click here for the Go version of this repository...](https://github.com/f2calv/multi-arch-container-go)
-- [Click here for the Helm chart used to deploy all three...](https://github.com/f2calv/helm-charts)
+- [Click here for the Python version of this repository...](https://github.com/f2calv/multi-arch-container-python)
+- [Click here for the Helm chart used to deploy all four...](https://github.com/f2calv/helm-charts)

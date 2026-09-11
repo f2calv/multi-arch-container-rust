@@ -8,11 +8,31 @@ edition = "2021"
 
 [dependencies]
 # Layered configuration (file -> environment), the Rust analogue of Microsoft.Extensions.Configuration.
-config = "0"
+config = { version = "0.15", default-features = false, features = ["json"] }
+# The OpenTelemetry crates are pinned exactly (= rather than the usual caret range) because they are
+# pre-1.0 and release in lockstep: opentelemetry, opentelemetry_sdk, the OTLP exporter, the tracing
+# appender and tracing-opentelemetry all traffic in the same types. A caret range would let Cargo
+# pick a mismatched set and fail to compile. Bump all five together, never individually.
+opentelemetry = { version = "=0.32.0", default-features = false, features = ["logs", "metrics", "trace"] }
+opentelemetry-appender-tracing = { version = "=0.32.0", default-features = false }
+opentelemetry-otlp = { version = "=0.32.0", default-features = false, features = [
+    "http-proto",
+    "logs",
+    "metrics",
+    "reqwest-blocking-client",
+    "reqwest-rustls-webpki-roots",
+    "trace",
+] }
+opentelemetry_sdk = { version = "=0.32.1", default-features = false, features = [
+    "logs",
+    "metrics",
+    "trace",
+] }
 serde = { version = "1", features = ["derive"] }
 # Structured, levelled logging - the Rust analogue of Serilog.
-tracing = "0"
-tracing-subscriber = { version = "0", features = ["env-filter", "json"] }
+tracing = "0.1"
+tracing-opentelemetry = { version = "=0.33.0", default-features = false }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 # Note: the 'termination' feature also traps SIGTERM, which is what Docker/Kubernetes send on shutdown.
 ctrlc = { version = "3", features = ["termination"] }
 tokio = { version = "1", features = [

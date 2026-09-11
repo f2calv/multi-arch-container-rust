@@ -54,6 +54,23 @@ impl Default for AppConfig {
     }
 }
 
+impl AppConfig {
+    fn validate(&self) -> Result<(), ConfigError> {
+        if self.greeting.trim().is_empty() {
+            return Err(ConfigError::Message(
+                "app.greeting must not be empty".to_owned(),
+            ));
+        }
+        if !(1..=3600).contains(&self.interval_seconds) {
+            return Err(ConfigError::Message(
+                "app.interval_seconds must be between 1 and 3600".to_owned(),
+            ));
+        }
+
+        Ok(())
+    }
+}
+
 /// Root settings object: application configuration plus the flat build provenance variables
 /// baked into the container image by the `ARG`/`ENV` block of the Dockerfile.
 #[derive(Debug, Clone, Deserialize)]
@@ -98,16 +115,23 @@ fn unknown() -> String {
 /// Build the configuration from `appsettings.json` (optional) then the environment, with the
 /// environment taking precedence - the same layering order as the sibling repositories.
 ///
+/// The sibling .NET repository layers one extra source, an optional
+/// `appsettings.{DOTNET_ENVIRONMENT}.json`, because `Host.CreateApplicationBuilder` provides it
+/// for free. It is deliberately not reimplemented here.
+///
 /// Note: `try_parsing` is deliberately left OFF. It coerces every environment value that *looks*
 /// numeric into an integer, which mangles values that only happen to be digits - an all-numeric
 /// `GIT_COMMIT` SHA would be logged as `0`. Values stay as strings and serde converts them to the
 /// declared field type on deserialisation instead.
 pub fn load() -> Result<Settings, ConfigError> {
-    Config::builder()
+    let settings: Settings = Config::builder()
         .add_source(File::new("appsettings", FileFormat::Json).required(false))
         .add_source(Environment::default().separator("__"))
         .build()?
-        .try_deserialize()
+        .try_deserialize()?;
+    settings.app.validate()?;
+
+    Ok(settings)
 }
 
 #[cfg(test)]
@@ -158,5 +182,27 @@ mod tests {
             .expect("configuration should deserialise");
 
         assert_eq!(settings.app.log_format, LogFormat::Json);
+    }
+
+    #[test]
+    fn validation_rejects_invalid_app_settings() {
+        let invalid_configs = [
+            AppConfig {
+                greeting: " ".to_owned(),
+                ..AppConfig::default()
+            },
+            AppConfig {
+                interval_seconds: 0,
+                ..AppConfig::default()
+            },
+            AppConfig {
+                interval_seconds: 3601,
+                ..AppConfig::default()
+            },
+        ];
+
+        for app in invalid_configs {
+            assert!(app.validate().is_err(), "configuration should be invalid");
+        }
     }
 }

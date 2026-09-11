@@ -9,6 +9,7 @@
 #   https://github.com/f2calv/multi-arch-container-dotnet
 #   https://github.com/f2calv/multi-arch-container-go
 #   https://github.com/f2calv/multi-arch-container-rust      <- you are here
+#   https://github.com/f2calv/multi-arch-container-python
 #
 # ------------------------------------------------------------------------------
 # Stage 1 of 2: build
@@ -109,7 +110,7 @@ EOF
 # ------------------------------------------------------------------------------
 FROM gcr.io/distroless/cc-debian12:nonroot AS final
 WORKDIR /app
-COPY --from=build /out/multi-arch-container-rust .
+COPY --link --from=build /out/multi-arch-container-rust .
 # Base configuration; every value can be overridden by an environment variable at runtime.
 COPY appsettings.json .
 
@@ -140,7 +141,7 @@ LABEL org.opencontainers.image.title="multi-arch-container-rust" \
     org.opencontainers.image.revision="$GIT_COMMIT"
 
 # The :nonroot distroless tag already runs as uid/gid 65532 - setting it
-# explicitly documents the intent and keeps the three sibling repos consistent.
+# explicitly documents the intent and keeps the four sibling repos consistent.
 USER nonroot:nonroot
 
 ENTRYPOINT ["/app/multi-arch-container-rust"]

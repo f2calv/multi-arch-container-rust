@@ -6,14 +6,21 @@
 
 use std::time::Duration;
 
+use opentelemetry::global;
 use tokio::sync::watch::Receiver;
-use tracing::info;
+use tracing::{info, info_span};
 
 use crate::config::Settings;
+use crate::telemetry::INSTRUMENTATION_NAME;
 
 /// Run the worker loop until `shutdown` is signalled.
 pub async fn run(settings: &Settings, mut shutdown: Receiver<bool>) {
     let app = &settings.app;
+    let iterations = global::meter(INSTRUMENTATION_NAME)
+        .u64_counter("worker.iterations")
+        .with_description("Number of completed worker iterations")
+        .with_unit("{iteration}")
+        .build();
 
     info!(
         greeting = %app.greeting,
@@ -25,28 +32,35 @@ pub async fn run(settings: &Settings, mut shutdown: Receiver<bool>) {
     let interval = Duration::from_secs(app.interval_seconds);
 
     loop {
-        info!(
-            app_name = %app_name(),
-            process_architecture = std::env::consts::ARCH,
-            os_description = std::env::consts::OS,
-            "{}",
-            app.greeting
-        );
+        {
+            let iteration_span = info_span!("worker.iteration");
+            let _entered = iteration_span.enter();
 
-        info!(
-            git_repository = %settings.git_repository,
-            git_branch = %settings.git_branch,
-            git_commit = %settings.git_commit,
-            git_tag = %settings.git_tag,
-            "git provenance"
-        );
+            info!(
+                app_name = %app_name(),
+                process_architecture = std::env::consts::ARCH,
+                os_description = std::env::consts::OS,
+                "{}",
+                app.greeting
+            );
 
-        info!(
-            github_workflow = %settings.github_workflow,
-            github_run_id = %settings.github_run_id,
-            github_run_number = %settings.github_run_number,
-            "github provenance"
-        );
+            info!(
+                git_repository = %settings.git_repository,
+                git_branch = %settings.git_branch,
+                git_commit = %settings.git_commit,
+                git_tag = %settings.git_tag,
+                "git provenance"
+            );
+
+            info!(
+                github_workflow = %settings.github_workflow,
+                github_run_id = %settings.github_run_id,
+                github_run_number = %settings.github_run_number,
+                "github provenance"
+            );
+
+            iterations.add(1, &[]);
+        }
 
         tokio::select! {
             _ = tokio::time::sleep(interval) => {}

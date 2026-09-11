@@ -25,3 +25,10 @@ updates:
       interval: weekly
       time: "04:00"
     open-pull-requests-limit: 10
+    #The OpenTelemetry crates are pinned exactly and release in lockstep, so a PR bumping one on its
+    #own can never compile. Grouping them produces a single PR that moves the whole set together.
+    groups:
+      opentelemetry:
+        patterns:
+          - opentelemetry*
+          - tracing-opentelemetry
