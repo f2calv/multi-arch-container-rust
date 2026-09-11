@@ -14,6 +14,7 @@ Detailed conventions live in scoped instruction files under `.github/instruction
 | File | Applies to | Covers |
 | --- | --- | --- |
 | `rust.instructions.md` | `**/*.rs` | Rust style, modules, error handling, logging, configuration, async, performance |
+| `docker.instructions.md` | `**/Dockerfile*`, `.dockerignore` | Multi-arch builds, stage structure, caching, provenance, hardening |
 | `github-actions.instructions.md` | workflows / `action.yml` | GitHub Actions naming, YAML, security, GitVersion |
 | `documentation.instructions.md` | `**/*.md` | README consistency & Mermaid diagrams |
 

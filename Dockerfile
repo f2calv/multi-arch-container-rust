@@ -110,7 +110,7 @@ EOF
 # ------------------------------------------------------------------------------
 FROM gcr.io/distroless/cc-debian12:nonroot AS final
 WORKDIR /app
-COPY --from=build /out/multi-arch-container-rust .
+COPY --link --from=build /out/multi-arch-container-rust .
 # Base configuration; every value can be overridden by an environment variable at runtime.
 COPY appsettings.json .
 
