@@ -38,6 +38,29 @@ These repositories are **application code only** - Kubernetes packaging lives in
   - Build Container + Push To GitHub Packages
   - GitHub Release
 
+## Project Structure
+
+- `src/main.rs` - entry point; configuration, logging and shutdown wiring only.
+- `src/config.rs` - `AppConfig` / `Settings` types and the layered loader.
+- `src/telemetry.rs` - `tracing` subscriber installation.
+- `src/worker.rs` - the worker loop.
+- `appsettings.json` - base configuration.
+- `Cargo.toml` / `Cargo.lock` - package manifest and lockfile (both committed).
+- `Dockerfile` - two-stage, cross-compiling, multi-architecture build.
+- `.github/workflows/ci.yml` - CI/CD using reusable workflows from [f2calv/gha-workflows](https://github.com/f2calv/gha-workflows).
+- `.devcontainer/` - VS Code devcontainer (Rust toolchain + Docker-outside-of-Docker). All Rust tooling runs in the container; nothing is installed on the host.
+- `build.sh` / `build.ps1` - local build scripts for manual testing.
+
+## Technology Stack
+
+- **Language**: Rust (edition 2021)
+- **Async runtime**: Tokio (minimal feature set - `macros`, `rt-multi-thread`, `sync`, `time`)
+- **Logging**: `tracing` + `tracing-subscriber`, with a text or JSON layer selected by configuration
+- **Configuration**: the [`config`](https://docs.rs/config) crate (`appsettings.json`, then environment variables), deserialised with `serde`
+- **Container**: Docker (multi-stage, distroless final image, non-root)
+- **CI/CD**: GitHub Actions (reusable workflows from [f2calv/gha-workflows](https://github.com/f2calv/gha-workflows))
+- **Versioning**: GitVersion (MainLine mode)
+
 ## Platform Mapping
 
 `docker buildx` injects `TARGETARCH` and `TARGETVARIANT` into the build, and the Dockerfile maps them onto a [Rust target triple](https://doc.rust-lang.org/nightly/rustc/platform-support.html) plus the matching GNU cross toolchain:
