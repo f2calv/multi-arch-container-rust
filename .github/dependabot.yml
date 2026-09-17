@@ -32,3 +32,9 @@ updates:
         patterns:
           - opentelemetry*
           - tracing-opentelemetry
+
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+      time: "04:00"

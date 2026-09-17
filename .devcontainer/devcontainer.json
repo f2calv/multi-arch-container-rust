@@ -22,8 +22,7 @@
       "yqVersion": "latest"
     }
   },
-  "postCreateCommand": "sh ./.devcontainer/postCreateCommand.sh",
-  "postStartCommand": "sh ./.devcontainer/postStartCommand.sh",
+  "postStartCommand": "bash ./.devcontainer/postStartCommand.sh",
   "customizations": {
     "vscode": {
       "settings": {
