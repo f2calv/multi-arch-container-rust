@@ -12,6 +12,7 @@
   "features": {
     "ghcr.io/devcontainers-extra/features/pre-commit:2": {},
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers/features/powershell:2": {},
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
       "version": "latest",
       "helm": "none",
@@ -43,6 +44,8 @@
         "usernamehw.errorlens",
         "eamodio.gitlens",
         "mutantdino.resourcemonitor",
+        "ms-vscode.powershell",
+        "github.vscode-github-actions",
         // Language specific
         "rust-lang.rust-analyzer",
         "vadimcn.vscode-lldb",
@@ -52,8 +55,8 @@
     }
   },
   "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/source/github,target=/workspaces,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/home/vscode/.kube,type=bind"
+    "source=${localEnv:HOME}/source/github,target=/workspaces,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind"
   ]
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"

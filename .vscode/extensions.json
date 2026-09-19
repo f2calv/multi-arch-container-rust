@@ -10,6 +10,8 @@
     "usernamehw.errorlens",
     "eamodio.gitlens",
     "mutantdino.resourcemonitor",
+    "ms-vscode.powershell",
+    "github.vscode-github-actions",
     // Language specific
     "rust-lang.rust-analyzer",
     "vadimcn.vscode-lldb",
