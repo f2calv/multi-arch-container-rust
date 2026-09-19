@@ -55,8 +55,8 @@
     }
   },
   "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/source/github,target=/workspaces,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/home/vscode/.kube,type=bind"
+    "source=${localEnv:HOME}/source/github,target=/workspaces,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind"
   ]
   // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
   // "remoteUser": "root"
