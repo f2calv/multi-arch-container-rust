@@ -219,11 +219,11 @@ envVars:
   RUST_LOG: debug
 ```
 
-Install or upgrade the Deployment with version `1.0.2` of the universal `workload` chart:
+Install or upgrade the Deployment with version `1.1.0` of the universal `workload` chart:
 
 ```bash
 helm upgrade --install multi-arch-container-rust oci://ghcr.io/f2calv/charts/workload \
-  --version 1.0.2 \
+  --version 1.1.0 \
   --values multi-arch-container-rust.values.yaml
 
 kubectl logs --follow deployment/multi-arch-container-rust
