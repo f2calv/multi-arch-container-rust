@@ -19,9 +19,9 @@ The same trivial worker application is implemented four times, once per language
 | Repository | Language | Build image | Final image | Cross-compilation mechanism |
 | --- | --- | --- | --- | --- |
 | [multi-arch-container-dotnet](https://github.com/f2calv/multi-arch-container-dotnet) | C# / .NET 10 | `mcr.microsoft.com/dotnet/sdk:10.0` | `mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled` | `dotnet publish -r <RID>` |
-| [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go) | Go | `golang:1-bookworm` | `gcr.io/distroless/static-debian12:nonroot` | `GOOS` / `GOARCH` / `GOARM` |
-| [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust) | Rust | `rust:1-bookworm` | `gcr.io/distroless/cc-debian12:nonroot` | `rustup target` + GNU cross linker |
-| [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python) | Python 3.14 | `python:3.14-slim-bookworm` | `python:3.14-slim-bookworm` | Architecture-neutral wheel + target-native runtime |
+| [multi-arch-container-go](https://github.com/f2calv/multi-arch-container-go) | Go | `golang:1-trixie` | `gcr.io/distroless/static-debian13:nonroot` | `GOOS` / `GOARCH` / `GOARM` |
+| [multi-arch-container-rust](https://github.com/f2calv/multi-arch-container-rust) | Rust | `rust:1-trixie` | `gcr.io/distroless/cc-debian13:nonroot` | `rustup target` + GNU cross linker |
+| [multi-arch-container-python](https://github.com/f2calv/multi-arch-container-python) | Python 3.14 | `python:3.14-slim-trixie` | `python:3.14-slim-trixie` | Architecture-neutral wheel + target-native runtime |
 
 Rust is the most involved compiled implementation: it needs a real cross linker because the binary links natively against the target's glibc.
 
@@ -95,13 +95,13 @@ flowchart LR
 
 The five ideas worth stealing:
 
-1. **Cross-compile, don't emulate.** The build stage is pinned with `FROM --platform=$BUILDPLATFORM`, so it always runs natively on the builder and produces output for the target. Letting buildx run the whole build under QEMU emulation instead is typically 10-50x slower.
+1. **Cross-compile, don't emulate.** The build stage is pinned with `FROM --platform=$BUILDPLATFORM`, so it always runs natively on the builder and produces output for the target. Letting buildx run the whole build under QEMU emulation instead is often an order of magnitude slower.
 2. **Split dependency resolution from compilation.** `cargo fetch` runs against a layer containing only `Cargo.toml` and `Cargo.lock`, so editing a `.rs` file reuses the cached download.
 3. **Switch on `TARGETARCH` + `TARGETVARIANT`, not `TARGETPLATFORM`.** Concatenating the two produces a single flat token (`amd64`, `arm64`, `armv7`) that a `case` statement handles in three lines, instead of comparing full `linux/arm/v7`-style strings.
 4. **Use BuildKit cache mounts.** `$CARGO_HOME` and `target/` are `--mount=type=cache` mounts, so incremental rebuilds are fast without any of the artefacts bloating the image. The `target/` cache is keyed per-architecture so the three platform legs do not thrash it, and the finished binary is `install`ed out of the mount inside the same `RUN`.
 5. **Ship a minimal, non-root final image.** `distroless/cc` has no shell and no package manager, and the container runs as uid/gid 65532.
 
-> Why `distroless/cc` and not `scratch`? The `*-unknown-linux-gnu` targets link dynamically against glibc. Switching to a `*-unknown-linux-musl` target would produce a fully static binary suitable for `gcr.io/distroless/static-debian12` or even `scratch` - at the cost of a musl cross toolchain and slightly slower allocator performance.
+> Why `distroless/cc` and not `scratch`? The `*-unknown-linux-gnu` targets link dynamically against glibc. Switching to a `*-unknown-linux-musl` target would produce a fully static binary suitable for `gcr.io/distroless/static-debian13` or even `scratch` - at the cost of a musl cross toolchain and slightly slower allocator performance.
 
 ## Logging
 
