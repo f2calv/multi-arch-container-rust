@@ -13,8 +13,8 @@ config = { version = "0.15", default-features = false, features = ["json"] }
 # pre-1.0 and release in lockstep: opentelemetry, opentelemetry_sdk, the OTLP exporter, the tracing
 # appender and tracing-opentelemetry all traffic in the same types. A caret range would let Cargo
 # pick a mismatched set and fail to compile. Bump all five together, never individually.
-opentelemetry = { version = "=0.32.0", default-features = false, features = ["logs", "metrics", "trace"] }
-opentelemetry-appender-tracing = { version = "=0.32.0", default-features = false }
+opentelemetry = { version = "=0.33.0", default-features = false, features = ["logs", "metrics", "trace"] }
+opentelemetry-appender-tracing = { version = "=0.33.0", default-features = false }
 opentelemetry-otlp = { version = "=0.32.0", default-features = false, features = [
     "http-proto",
     "logs",
@@ -23,7 +23,7 @@ opentelemetry-otlp = { version = "=0.32.0", default-features = false, features =
     "reqwest-rustls-webpki-roots",
     "trace",
 ] }
-opentelemetry_sdk = { version = "=0.32.1", default-features = false, features = [
+opentelemetry_sdk = { version = "=0.33.0", default-features = false, features = [
     "logs",
     "metrics",
     "trace",
