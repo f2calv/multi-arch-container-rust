@@ -16,13 +16,13 @@
 #
 # Pinned to $BUILDPLATFORM (the native architecture of the machine running the
 # build) and CROSS-COMPILES to $TARGETPLATFORM. The alternative - emulating the
-# target architecture under QEMU - is typically 10-50x slower.
+# target architecture under QEMU - is often an order of magnitude slower.
 #
 # Unlike .NET and Go, Rust produces a natively-linked binary, so cross-compiling
 # needs three things: the rustup std library for the target triple, a GNU cross
 # linker/compiler, and cargo told which of each to use.
 # ------------------------------------------------------------------------------
-FROM --platform=$BUILDPLATFORM rust:1-bookworm AS build
+FROM --platform=$BUILDPLATFORM rust:1-trixie AS build
 WORKDIR /src
 
 ARG APP_NAME=multi-arch-container-rust
@@ -104,11 +104,11 @@ EOF
 #
 # `cc` is the distroless variant that ships glibc + libgcc, which is what the
 # *-unknown-linux-gnu targets link against. Alternatives:
-#   gcr.io/distroless/cc-debian12:nonroot  glibc, ~25MB, non-root  (used here)
-#   gcr.io/distroless/static-debian12      only for fully-static *-musl targets
+#   gcr.io/distroless/cc-debian13:nonroot  glibc, ~25MB, non-root  (used here)
+#   gcr.io/distroless/static-debian13      only for fully-static *-musl targets
 #   scratch                                only for fully-static *-musl targets
 # ------------------------------------------------------------------------------
-FROM gcr.io/distroless/cc-debian12:nonroot AS final
+FROM gcr.io/distroless/cc-debian13:nonroot AS final
 WORKDIR /app
 COPY --link --from=build /out/multi-arch-container-rust .
 # Base configuration; every value can be overridden by an environment variable at runtime.

@@ -42,5 +42,5 @@ Configuration keys are **snake_case** in both `appsettings.json` and the environ
 ## Container Conventions
 
 - The `TARGETARCH`+`TARGETVARIANT` to target-triple mapping is resolved **once** in the toolchain layer and written to `/etc/rust-target.env`, which later layers source. Do not duplicate the `case` statement.
-- The final image is `gcr.io/distroless/cc-debian12:nonroot`. `cc` (not `static`) is required because the `*-unknown-linux-gnu` targets link dynamically against glibc.
+- The final image is `gcr.io/distroless/cc-debian13:nonroot`. `cc` (not `static`) is required because the `*-unknown-linux-gnu` targets link dynamically against glibc.
 - The Dockerfile builds with `--locked`, so `Cargo.lock` must be regenerated (`cargo fetch`) whenever `Cargo.toml` changes.
